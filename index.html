@@ -59,10 +59,10 @@
 
 <script>
   // ==========================================
-  // CONFIGURATION - COLOQUE SEUS LINKS AQUI:
+  // CONFIGURATION:
   // ==========================================
-  const BASE_URL = "https://eucidio.github.io/test/"; // Link do GitHub Pages (com barra no final)
-  const scriptURL = "https://script.google.com/macros/s/AKfycbzbds4zjk6QHPEjkyjVJ_zmXBF1MRgcJOjlX45SfIZlTnvTiw3iSYxGeGUZU6mCd0OIRA/exec"; // Link do Google Web App (do doPost)
+  const BASE_URL = "https://eucidio.github.io/test/"; 
+  const scriptURL = "COLE_AQUI_O_LINK_DO_SEU_GOOGLE_SCRIPT"; // Link do Google Web App (do doPost)
 
   let studentID = "", punkte = 0, tempo = 40 * 60, currentTask = 1, versuche = 0, subIndex = 0;
   let botX = 0, botY = 4, botCmds = [];
@@ -123,7 +123,7 @@
     } else if(currentTask === 4) {
       area.innerHTML = `<h3>Aufgabe 4: Binär</h3><input type="text" id="t-name" placeholder="Name..."><button class="btn-game" onclick="translateNow()">Verwandeln!</button>
         <div id="b-res" class="hidden" style="background:#eee;padding:15px;margin:10px;word-break:break-all;font-family:monospace;border:2px dashed var(--blue);"></div>
-        <div id="count-area" class="hidden"><br>0: <input type="number" id="z" style="width:60px"> 1: <input type="number" id="o" style="width:60px"><br><button class="btn-game" onclick="punkte+=20; currentTask=5; renderCurrentTask();">PRÜFEN</button></div>`;
+        <div id="count-area" class="hidden"><br>0: <input type="number" id="z" style="width:60px"> 1: <input type="number" id="o" style="width:60px"><br><button class="btn-game" onclick="checkA4()">PRÜFEN</button></div>`;
     } else if(currentTask === 5) {
       pixelsPainted = 0;
       area.innerHTML = `<h3>Aufgabe 5: Pixel Art</h3><div id="pixel-canvas"></div><br><input type="text" id="px-guess" placeholder="Was siehst du?"><button class="btn-game" onclick="checkA5()">WEITER</button>`;
@@ -151,7 +151,6 @@
     document.getElementById('score-label').innerText = punkte;
   }
 
-  // --- LOGIC FUNCTIONS ---
   function checkA2() {
     const list = [...document.querySelectorAll('.sort-item')];
     const isCorrect = list.every((el, i) => el.dataset.id == (i+1));
@@ -184,6 +183,8 @@
     document.getElementById('b-res').innerText = v.split('').map(c=>c.charCodeAt(0).toString(2).padStart(8,'0')).join(' ');
     document.getElementById('b-res').classList.remove('hidden'); document.getElementById('count-area').classList.remove('hidden');
   }
+
+  function checkA4() { punkte+=20; currentTask=5; renderCurrentTask(); }
 
   function loadPixels() {
     const c = document.getElementById('pixel-canvas');
@@ -238,7 +239,7 @@
       cache: "no-cache",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
-    }).catch(e => console.log("Fehler beim Senden"));
+    }).catch(e => console.log("Fehler ao enviar"));
   }
 </script>
 </body>
