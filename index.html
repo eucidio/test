@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
@@ -48,7 +48,7 @@
       <button class="btn-game" onclick="playOnce()">▶️ Play</button>
       <h2>Willkommen!</h2>
       <p>Überprüfe deinen Code:</p>
-      <input type="text" id="student-code" placeholder="Code hier...">
+      <input type="text" id="student-code" placeholder="Code aqui...">
       <br><br>
       <button class="btn-game" style="background:var(--green); width: 250px; height: 70px; font-size: 1.5rem;" onclick="initGame()">SPIEL STARTEN</button>
     </div>
@@ -61,9 +61,6 @@
 </div>
 
 <script>
-  // ==========================================
-  // CONFIGURATION
-  // ==========================================
   const BASE_URL = "https://eucidio.github.io/test/"; 
   const scriptURL = "https://script.google.com/macros/s/AKfycbzbds4zjk6QHPEjkyjVJ_zmXBF1MRgcJOjlX45SfIZlTnvTiw3iSYxGeGUZU6mCd0OIRA/exec"; 
 
@@ -72,13 +69,10 @@
   let pixelsPainted = 0, currentColor = "#000000", currentBrushSize = 8;
   let savedAntwortA5 = "";
 
-  // FUNÇÃO DE LEITURA AUTOMÁTICA DO QR CODE
   window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
     const idDoQR = urlParams.get('id');
-    if (idDoQR) {
-      document.getElementById('student-code').value = idDoQR.toUpperCase();
-    }
+    if (idDoQR) { document.getElementById('student-code').value = idDoQR.toUpperCase(); }
   };
 
   const a1Data = [
@@ -127,46 +121,45 @@
       });
     } else if(currentTask === 2) {
       const a2D = ["Essen aufräumen","Den Tisch abwischen","Hände waschen","Hände abtrocknen","iPad-Akku prüfen","iPad auf den Tisch legen"];
-      area.innerHTML = `<h3>Aufgabe 2</h3><p>Bringe die Schritte in die richtige Reihenfolge:</p><div id="sort-list">${a2D.map((t, i) => `<div class="sort-item" data-id="${i+1}">${t}</div>`).sort(()=>Math.random()-0.5).join('')}</div><button class="btn-game" style="background:var(--green)" onclick="checkA2()">PRÜFEN</button>`;
+      area.innerHTML = `<h3>Aufgabe 2</h3><p>Reihenfolge:</p><div id="sort-list">${a2D.map((t, i) => `<div class="sort-item" data-id="${i+1}">${t}</div>`).sort(()=>Math.random()-0.5).join('')}</div><button class="btn-game" style="background:var(--green)" onclick="checkA2()">PRÜFEN</button>`;
       new Sortable(document.getElementById('sort-list'), { animation: 150 });
     } else if(currentTask === 3) {
       botCmds = []; botX = 0; botY = 4;
-      area.innerHTML = `<h3>Aufgabe 3: Bluebot</h3><p>Fahre zur Schule (🏫)!</p><div class="bluebot-grid"><div style="position:absolute;top:15px;right:15px;font-size:50px;z-index:1;">🏫</div><div id="robot">🤖</div>${Array(25).fill('<div class="grid-cell"></div>').join('')}</div>
+      area.innerHTML = `<h3>Aufgabe 3: Bluebot</h3><div class="bluebot-grid"><div style="position:absolute;top:15px;right:15px;font-size:50px;z-index:1;">🏫</div><div id="robot">🤖</div>${Array(25).fill('<div class="grid-cell"></div>').join('')}</div>
         <div class="cmd-stack" id="stack"> </div>
         <div><button class="btn-game" onclick="addBotCmd('F')">⬆️</button><button class="btn-game" onclick="addBotCmd('B')">⬇️</button><button class="btn-game" onclick="addBotCmd('L')">↩️</button><button class="btn-game" onclick="addBotCmd('R')">↪️</button></div>
         <button id="btnA3" class="btn-game" style="background:var(--green)" onclick="runBotLogic()">GO!</button> <button class="btn-game" onclick="renderCurrentTask()">Reset</button>`;
     } else if(currentTask === 4) {
-      area.innerHTML = `<h3>Aufgabe 4: Binär</h3><p>Schreibe deinen Namen und schau dir den Code an:</p><input type="text" id="t-name" placeholder="Name..."><br><button class="btn-game" onclick="translateNow()">Verwandeln!</button>
-        <div id="b-res" class="hidden" style="background:#eee;padding:15px;margin:10px;word-break:break-all;font-family:monospace;border:2px dashed var(--blue);"></div>
+      area.innerHTML = `<h3>Aufgabe 4: Binär</h3><input type="text" id="t-name" placeholder="Name..."><br><button class="btn-game" onclick="translateNow()">Verwandeln!</button>
+        <div id="b-res" class="hidden" style="background:#eee;padding:15px;margin:10px;word-break:break-all;font-family:monospace;"></div>
         <div id="count-area" class="hidden"><br><button class="btn-game" onclick="punkte+=20; currentTask=5; renderCurrentTask();">WEITER</button></div>`;
     } else if(currentTask === 5) {
-      area.innerHTML = `<h3>Aufgabe 5: Pixel Art</h3><p>Male das Bild aus. Was siehst du?</p><div id="pixel-canvas"></div><br><input type="text" id="px-guess" placeholder="Was ist das?"><button class="btn-game" onclick="checkA5()">WEITER</button>`;
+      area.innerHTML = `<h3>Aufgabe 5: Pixel Art</h3><div id="pixel-canvas"></div><br><input type="text" id="px-guess" placeholder="Was ist das?"><button class="btn-game" onclick="checkA5()">WEITER</button>`;
       loadPixels();
     } else if(currentTask === 6) {
-      area.innerHTML = `<h3>Aufgabe 6: Malen</h3><p>Male ein Bild:</p>
-        <div class="palette">${['#000','#F00','#0F0','#00F','#FF0','#FFF'].map(c=>`<div class="swatch" style="background:${c}" onclick="currentColor='${c}'"></div>`).join('')}</div>
-        <div class="palette"><button class="brush-btn" onclick="currentBrushSize=3">Fein</button><button class="brush-btn active" onclick="currentBrushSize=8">Mittel</button><button class="brush-btn" onclick="currentBrushSize=15">Groß</button><button class="brush-btn" onclick="currentColor='#FFFFFF'">🧽 Radierer</button></div>
+      area.innerHTML = `<h3>Aufgabe 6: Malen</h3><div class="palette">${['#000','#F00','#0F0','#00F','#FF0','#FFF'].map(c=>`<div class="swatch" style="background:${c}" onclick="currentColor='${c}'"></div>`).join('')}</div>
+        <div class="palette"><button class="brush-btn" onclick="currentBrushSize=3">Fein</button><button class="brush-btn active" onclick="currentBrushSize=8">Mittel</button><button class="brush-btn" onclick="currentBrushSize=15">Groß</button><button class="brush-btn" onclick="currentColor='#FFFFFF'">🧽</button></div>
         <canvas id="paint-canvas" width="600" height="400"></canvas><br><button class="btn-game" onclick="punkte+=10; currentTask=7; subIndex=0; renderCurrentTask()">FERTIG</button>`;
       initPaint();
     } else if(currentTask === 7) {
       const qA = [
-        {q:"Darfst du dein Alter verraten?", i:BASE_URL+"Jahr.jpg", o:["Nein!","Ja."], c:0},
-        {q:"Darfst du deine Adresse senden?", i:BASE_URL+"Adresse.jpg", o:["Ja.","Eltern fragen!"], c:1},
-        {q:"Darfst du einfach etwas kaufen?", i:BASE_URL+"Kaufen.jpg", o:["Nein!","Ja."], c:0},
-        {q:"Darfst du Fotos schicken?", i:BASE_URL+"Fotos.jpg", o:["Ja.","Niemals allein!"], c:1}
+        {q:"Alter?", i:BASE_URL+"Jahr.jpg", o:["Nein!","Ja."], c:0},
+        {q:"Adresse?", i:BASE_URL+"Adresse.jpg", o:["Ja.","Eltern fragen!"], c:1},
+        {q:"Kaufen?", i:BASE_URL+"Kaufen.jpg", o:["Nein!","Ja."], c:0},
+        {q:"Fotos?", i:BASE_URL+"Fotos.jpg", o:["Ja.","Niemals!"], c:1}
       ];
       if(subIndex >= qA.length) { currentTask=8; renderCurrentTask(); return; }
-      area.innerHTML = `<h3>Aufgabe 7: Sicherheit</h3><img src="${qA[subIndex].i}" height="180"><p style="font-size:1.3rem;">${qA[subIndex].q}</p><div id="q-opts"></div>`;
+      area.innerHTML = `<h3>Aufgabe 7</h3><img src="${qA[subIndex].i}" height="180"><p>${qA[subIndex].q}</p><div id="q-opts"></div>`;
       qA[subIndex].o.forEach((o, j) => {
         const btn = document.createElement('div'); btn.className = "sort-item"; btn.innerText = o;
         btn.onclick = () => { if(j === qA[subIndex].c) punkte+=10; subIndex++; renderCurrentTask(); };
         document.getElementById('q-opts').appendChild(btn);
       });
     } else if(currentTask === 8) {
-      area.innerHTML = `<h3>Aufgabe 8</h3><p>Was darf man mit dem iPad <b>NICHT</b> tun? (Anklicken)</p>
+      area.innerHTML = `<h3>Aufgabe 8</h3><p>Was darf man NICHT tun?</p>
         <div class="click-item" data-bad="true">Am iPad essen</div>
         <div class="click-item" data-bad="true">iPad auf den Boden legen</div>
-        <button class="btn-game" style="background:var(--green); margin-top:20px;" onclick="checkA8()">SPIEL BEENDEN</button>`;
+        <button class="btn-game" style="background:var(--green); margin-top:20px;" onclick="checkA8()">ENDE</button>`;
       document.querySelectorAll('.click-item').forEach(el => el.onclick = () => el.classList.toggle('error-bg'));
     }
     document.getElementById('score-label').innerText = punkte;
@@ -174,7 +167,7 @@
 
   function checkA2() {
     const list = [...document.querySelectorAll('.sort-item')];
-    if(list.every((el, i) => el.dataset.id == (i+1))) { punkte += 20; currentTask = 3; renderCurrentTask(); } else alert("Versuche es nochmal!");
+    if(list.every((el, i) => el.dataset.id == (i+1))) { punkte += 20; currentTask = 3; renderCurrentTask(); } else alert("Falsch!");
   }
 
   function addBotCmd(type) { botCmds.push(type); document.getElementById('stack').innerHTML += (type==='F'?'⬆️':type==='B'?'⬇️':type==='L'?'↩️':'↪️') + " "; }
@@ -188,7 +181,7 @@
         else { let m = (cmd==='F'?-1:1); if(cD===0)cY+=m; else if(cD===1)cX-=m; else if(cD===2)cY-=m; else if(cD===3)cX+=m; }
         r.style.transform = `rotate(${cD*90}deg)`; r.style.left = (Math.max(0,Math.min(4,cX))*95+5)+"px"; r.style.top = (Math.max(0,Math.min(4,cY))*95+5)+"px";
         i++; setTimeout(step, 600);
-      } else { if(cX===4 && cY===0) { punkte+=20; currentTask=4; renderCurrentTask(); } else alert("Du bist noch nicht an der Schule!"); }
+      } else { if(cX===4 && cY===0) { punkte+=20; currentTask=4; renderCurrentTask(); } else alert("Falsch!"); }
     }
     step();
   }
@@ -201,6 +194,7 @@
 
   function loadPixels() {
     const c = document.getElementById('pixel-canvas');
+    c.innerHTML = "";
     for(let i=0; i<15*13; i++){
       let p = document.createElement('div'); p.className='pix'; p.dataset.p="f"; p.innerText=Math.floor(Math.random()*9)+1;
       const paint = (el) => {
@@ -230,7 +224,7 @@
       return [x, y];
     };
     cvs.onmousedown = cvs.ontouchstart = (e) => { d = true; ctx.beginPath(); const [x,y] = getXY(e); ctx.moveTo(x,y); };
-    cvs.onmouseup = cvs.ontouchend = () => d = false;
+    cvs.onmouseup = cvs.ontouchend = () => { d = false; ctx.beginPath(); };
     cvs.onmousemove = cvs.ontouchmove = (e) => {
       if(!d) return; e.preventDefault();
       ctx.lineWidth = currentBrushSize; ctx.lineCap='round'; ctx.strokeStyle = currentColor;
@@ -243,16 +237,8 @@
   function finishGame() {
     document.getElementById('avatar-img').classList.add('hidden');
     document.getElementById('header').classList.add('hidden');
-    document.getElementById('game-area').innerHTML = `
-      <img src="${BASE_URL}menino.png" width="300">
-      <div class="finish-text">Fertig!</div>
-      <p style="font-size:2rem; font-weight:bold;">Punkte: ${punkte}</p>
-      <p>Gut gemacht!</p>`;
-
-    fetch(scriptURL, {
-      method: "POST", mode: "no-cors",
-      body: JSON.stringify({ id: studentID, score: punkte, antwortA5: savedAntwortA5 })
-    });
+    document.getElementById('game-area').innerHTML = `<img src="${BASE_URL}menino.png" width="300"><div class="finish-text">Fertig!</div><p>Punkte: ${punkte}</p>`;
+    fetch(scriptURL, { method: "POST", mode: "no-cors", body: JSON.stringify({ id: studentID, score: punkte, antwortA5: savedAntwortA5 }) });
   }
 </script>
 </body>
