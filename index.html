@@ -62,7 +62,7 @@
   let studentID = "", punkte = 0, tempo = 40 * 60, currentTask = 1, versuche = 0, subIndex = 0;
   let botX = 0, botY = 4, botCmds = [];
   let pixelsPainted = 0, currentColor = "#000000", currentBrushSize = 8;
-  let savedAntwortA5 = "";
+  let savedAntwortA5 = "", drawingData = ""; // Variable für das Bild hinzugefügt
 
   window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -133,9 +133,9 @@
       loadPixels();
     } else if(currentTask === 6) {
       area.innerHTML = `<h3>Aufgabe 6: Malen</h3>
-        <div class="palette">${['#000','#F00','#0F0','#00F','#FF0','#FFF'].map(c=>`<div class="swatch" style="background:${c}" onclick="currentColor='${c}'"></div>`).join('')}</div>
+        <div class="palette">${['#000','#7F7F7F','#880015','#F00','#FF7F27','#FF0','#0F0','#00A2E8','#00F','#A349A4','#FFAEC9','#FFF'].map(c=>`<div class="swatch" style="background:${c}" onclick="currentColor='${c}'"></div>`).join('')}</div>
         <div class="palette"><button class="brush-btn" onclick="currentBrushSize=3">Fein</button><button class="brush-btn active" onclick="currentBrushSize=8">Mittel</button><button class="brush-btn" onclick="currentBrushSize=15">Groß</button><button class="brush-btn" onclick="currentColor='#FFFFFF'">🧽</button></div>
-        <canvas id="paint-canvas" width="600" height="400"></canvas><br><button class="btn-game" onclick="punkte+=10; currentTask=7; subIndex=0; renderCurrentTask()">FERTIG</button>`;
+        <canvas id="paint-canvas" width="600" height="400"></canvas><br><button class="btn-game" onclick="saveDrawingAndNext()">FERTIG</button>`;
       initPaint();
     } else if(currentTask === 7) {
       const qA = [
@@ -224,6 +224,7 @@
 
   function initPaint() {
     const cvs = document.getElementById('paint-canvas'); const ctx = cvs.getContext('2d');
+    ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0,0,cvs.width,cvs.height); // Hintergrund weiß füllen
     let d = false;
     const getXY = (e) => {
       const r = cvs.getBoundingClientRect();
@@ -232,7 +233,7 @@
       return [x, y];
     };
     cvs.onmousedown = cvs.ontouchstart = (e) => { d = true; ctx.beginPath(); const [x,y] = getXY(e); ctx.moveTo(x,y); };
-    cvs.onmouseup = cvs.ontouchend = () => { d = false; ctx.beginPath(); };
+    cvs.onmouseup = cvs.ontouchend = () => { d = false; };
     cvs.onmousemove = cvs.ontouchmove = (e) => {
       if(!d) return; e.preventDefault();
       ctx.lineWidth = currentBrushSize; ctx.lineCap='round'; ctx.strokeStyle = currentColor;
@@ -240,11 +241,29 @@
     };
   }
 
+  function saveDrawingAndNext() {
+    const cvs = document.getElementById('paint-canvas');
+    drawingData = cvs.toDataURL("image/png"); // Bild als Text speichern
+    punkte += 10;
+    currentTask = 7;
+    subIndex = 0;
+    renderCurrentTask();
+  }
+
   function finishGame() {
     document.getElementById('avatar-img').classList.add('hidden');
     document.getElementById('header').classList.add('hidden');
     document.getElementById('game-area').innerHTML = `<img src="${BASE_URL}menino.png" width="300"><div style="font-size:70px; font-weight:bold; color:var(--purple); margin:20px 0;">Fertig!</div><p>Punkte: ${punkte}</p>`;
-    fetch(scriptURL, { method: "POST", mode: "no-cors", body: JSON.stringify({ id: studentID, score: punkte, antwortA5: savedAntwortA5 }) });
+    fetch(scriptURL, { 
+      method: "POST", 
+      mode: "no-cors", 
+      body: JSON.stringify({ 
+        id: studentID, 
+        score: punkte, 
+        antwortA5: savedAntwortA5,
+        bildData: drawingData 
+      }) 
+    });
   }
 </script>
 </body>
