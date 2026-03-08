@@ -48,14 +48,12 @@
       <button class="btn-game" onclick="playOnce()">▶️ Play</button>
       <h2>Willkommen!</h2>
       <p>Überprüfe deinen Code:</p>
-      <input type="text" id="student-code" placeholder="Code aqui...">
+      <input type="text" id="student-code" placeholder="Code hier...">
       <br><br>
       <button class="btn-game" style="background:var(--green); width: 250px; height: 70px; font-size: 1.5rem;" onclick="initGame()">SPIEL STARTEN</button>
     </div>
-
     <div id="screen-tasks" class="hidden">
       <div id="task-content"></div>
-      <p id="feedback" style="font-weight:bold; color:var(--red); min-height:30px; margin-top:10px;"></p>
     </div>
   </div>
 </div>
@@ -142,12 +140,7 @@
         <canvas id="paint-canvas" width="600" height="400"></canvas><br><button class="btn-game" onclick="punkte+=10; currentTask=7; subIndex=0; renderCurrentTask()">FERTIG</button>`;
       initPaint();
     } else if(currentTask === 7) {
-      const qA = [
-        {q:"Alter?", i:BASE_URL+"Jahr.jpg", o:["Nein!","Ja."], c:0},
-        {q:"Adresse?", i:BASE_URL+"Adresse.jpg", o:["Ja.","Eltern fragen!"], c:1},
-        {q:"Kaufen?", i:BASE_URL+"Kaufen.jpg", o:["Nein!","Ja."], c:0},
-        {q:"Fotos?", i:BASE_URL+"Fotos.jpg", o:["Ja.","Niemals!"], c:1}
-      ];
+      const qA = [{q:"Alter?", i:BASE_URL+"Jahr.jpg", o:["Nein!","Ja."], c:0}, {q:"Adresse?", i:BASE_URL+"Adresse.jpg", o:["Ja.","Eltern fragen!"], c:1}, {q:"Kaufen?", i:BASE_URL+"Kaufen.jpg", o:["Nein!","Ja."], c:0}, {q:"Fotos?", i:BASE_URL+"Fotos.jpg", o:["Ja.","Niemals!"], c:1}];
       if(subIndex >= qA.length) { currentTask=8; renderCurrentTask(); return; }
       area.innerHTML = `<h3>Aufgabe 7</h3><img src="${qA[subIndex].i}" height="180"><p>${qA[subIndex].q}</p><div id="q-opts"></div>`;
       qA[subIndex].o.forEach((o, j) => {
@@ -156,10 +149,7 @@
         document.getElementById('q-opts').appendChild(btn);
       });
     } else if(currentTask === 8) {
-      area.innerHTML = `<h3>Aufgabe 8</h3><p>Was darf man NICHT tun?</p>
-        <div class="click-item" data-bad="true">Am iPad essen</div>
-        <div class="click-item" data-bad="true">iPad auf den Boden legen</div>
-        <button class="btn-game" style="background:var(--green); margin-top:20px;" onclick="checkA8()">ENDE</button>`;
+      area.innerHTML = `<h3>Aufgabe 8</h3><p>O que não pode fazer?</p><div class="click-item" data-bad="true">Am iPad essen</div><div class="click-item" data-bad="true">iPad auf den Boden legen</div><button class="btn-game" style="background:var(--green); margin-top:20px;" onclick="checkA8()">ENDE</button>`;
       document.querySelectorAll('.click-item').forEach(el => el.onclick = () => el.classList.toggle('error-bg'));
     }
     document.getElementById('score-label').innerText = punkte;
@@ -167,7 +157,17 @@
 
   function checkA2() {
     const list = [...document.querySelectorAll('.sort-item')];
-    if(list.every((el, i) => el.dataset.id == (i+1))) { punkte += 20; currentTask = 3; renderCurrentTask(); } else alert("Falsch!");
+    const isCorrect = list.every((el, i) => el.dataset.id == (i+1));
+    list.forEach((el, i) => el.className = el.dataset.id == (i+1) ? "sort-item correct-bg" : "sort-item error-bg");
+    if (isCorrect) {
+      punkte += 20;
+      setTimeout(() => { currentTask = 3; versuche = 0; renderCurrentTask(); }, 1200);
+    } else {
+      versuche++;
+      if (versuche >= 2) {
+        setTimeout(() => { currentTask = 3; versuche = 0; renderCurrentTask(); }, 1200);
+      } else { alert("Versuche es ainda einmal!"); }
+    }
   }
 
   function addBotCmd(type) { botCmds.push(type); document.getElementById('stack').innerHTML += (type==='F'?'⬆️':type==='B'?'⬇️':type==='L'?'↩️':'↪️') + " "; }
