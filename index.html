@@ -28,6 +28,7 @@
     #pixel-canvas { display: grid; grid-template-columns: repeat(15, 45px); margin: 10px auto; width: 675px; border: 2px solid #333; touch-action: none; background: #fff; }
     .pix { width: 45px; height: 45px; border: 0.5px solid #eee; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #ccc; }
     .instruction-box { background: #fdfdfd; border: 3px dashed var(--blue); padding: 30px; border-radius: 20px; margin: 20px auto; max-width: 80%; }
+    .instruction-text { font-size: 1.1rem; color: #444; margin-bottom: 15px; border-radius: 10px; line-height: 1.4; }
   </style>
 </head>
 <body>
@@ -66,6 +67,9 @@
   let savedAntwortA5 = "", drawingData = ""; 
   let isShowingInstruction = true;
 
+  // VARIÁVEIS PARA RASTREAR RESPOSTAS
+  let a1Hits = 0, a2Status = "Nein", a3Status = "Nein", a7Hits = 0, a8BadActions = 0;
+
   window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
     const idDoQR = urlParams.get('id');
@@ -80,26 +84,21 @@
   ];
 
   function playOnce() { 
-    let v = document.getElementById('vid'); 
-    v.src = BASE_URL + "menina_video.mp4";
-    v.play(); 
+    let v = document.getElementById('vid'); v.src = BASE_URL + "menina_video.mp4"; v.play(); 
   }
 
   function initGame() {
     studentID = document.getElementById('student-code').value;
     if(!studentID) return alert("Code!");
     document.getElementById('screen-intro').classList.add('hidden');
-    let av = document.getElementById('avatar-img');
-    av.src = BASE_URL + "menina.png";
-    av.classList.remove('hidden');
+    let av = document.getElementById('avatar-img'); av.src = BASE_URL + "menina.png"; av.classList.remove('hidden');
     document.getElementById('screen-tasks').classList.remove('hidden');
     renderCurrentTask();
     setInterval(() => { if(tempo>0){ tempo--; updateTimer(); } }, 1000);
   }
 
   function updateTimer() { 
-    let m = Math.floor(tempo/60), s = tempo%60; 
-    document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`; 
+    let m = Math.floor(tempo/60), s = tempo%60; document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`; 
   }
 
   function renderCurrentTask() {
@@ -119,7 +118,7 @@
       it.o.forEach(opt => {
         const btn = document.createElement('button'); btn.className = "btn-game"; btn.innerText = opt;
         btn.onclick = () => { 
-          if(opt === it.n){ punkte+=10; subIndex++; versuche=0; renderCurrentTask(); } 
+          if(opt === it.n){ punkte+=10; a1Hits++; subIndex++; versuche=0; renderCurrentTask(); } 
           else { versuche++; if(versuche >= 2) { subIndex++; versuche=0; renderCurrentTask(); } else alert("Falsch!"); }
         };
         document.getElementById('opts').appendChild(btn);
@@ -149,130 +148,4 @@
       initPaint();
     } else if(currentTask === 7) {
       const qA = [
-        {q: "Jemand fragt dich im Internet: 'Wie alt bist du?'. Was machst du?", i: BASE_URL + "jahr.png", o: ["Ich sage mein Alter.", "Ich rufe meine Eltern und zeige es ihnen."], c: 1},
-        {q: "Jemand fragt nach deiner Adresse. Was machst du?", i: BASE_URL + "adresse.png", o: ["Ich schicke sie sofort.", "Ich frage, warum ele isso saber quer.", "Ich rufe meine Eltern und zeige es ihnen."], c: 2},
-        {q: "Du siehst Werbung in einer Spiele-App. Was machst du?", i: BASE_URL + "kaufen.png", o: ["Ich klicke drauf, um zu gucken.", "Ich bitte meine Eltern, die App zu löschen."], c: 1},
-        {q: "Jemand möchte, dass du Fotos or Videos schickst. Was machst du?", i: BASE_URL + "fotos.png", o: ["Ich schicke die Fotos.", "Ich rufe meine Eltern und zeige es ihnen."], c: 1}
-      ];
-      if(subIndex >= qA.length) { nextTask(8); return; }
-      area.innerHTML = `<h3>AUFGABE 7</h3><img src="${qA[subIndex].i}" height="180"><p>${qA[subIndex].q}</p><div id="q-opts"></div>`;
-      qA[subIndex].o.forEach((o, j) => {
-        const btn = document.createElement('div'); btn.className = "sort-item"; btn.innerText = o;
-        btn.onclick = () => { if(j === qA[subIndex].c) punkte+=10; subIndex++; renderCurrentTask(); };
-        document.getElementById('q-opts').appendChild(btn);
-      });
-    } else if(currentTask === 8) {
-      area.innerHTML = `<h3>AUFGABE 8</h3><p>Was darfst du mit dem iPad <b>NICHT</b> machen? (Klicke an):</p>
-        <div class="click-item" onclick="handleA8(this, true)">Beim iPad-Spielen essen</div>
-        <div class="click-item" onclick="handleA8(this, true)">Laden erst bei unter 20% Akku</div>
-        <div class="click-item" onclick="handleA8(this, true)">Das iPad mit nur einer Hand tragen.</div>
-        <div class="click-item" onclick="handleA8(this, false)">Das iPad immer sicher auf den Tisch legen.</div>
-        <div class="click-item" onclick="handleA8(this, true)">Das iPad auf den Boden legen</div>
-        <div class="click-item" onclick="handleA8(this, true)">Das iPad aus der Schutzhülle nehmen</div>
-        <br><button class="btn-game" onclick="finishGame()">ENDE</button>`;
-    }
-    document.getElementById('score-label').innerText = punkte;
-  }
-
-  function showInstructionScreen(area) {
-    let msg = "";
-    let audio = "";
-    if(currentTask === 1) { msg = "Sieh dir das Bild an und höre das Audio. Dann klicke auf die Antwort, die du richtig findest. Du hast zwei Versuche. Wenn du gleich beim ersten Mal richtig bist, gehen wir schon zum nächsten Bild."; audio = "aufgabe1.mp3"; }
-    else if(currentTask === 2) { msg = "Du hast gerade gefrühstückt und musst eine Aufgabe auf dem iPad machen. Was musst du jetzt tun?"; }
-    else if(currentTask === 3) { msg = "Klicke auf die Befehle, die du dem Bluebot geben musst, damit er zur Schule kommt. Es gibt mehrere richtige Antworten."; }
-    else if(currentTask === 4) { msg = "Wie viele 0 und wie viele 1 hat dein Name (Vorname und Nachname)?"; }
-    else if(currentTask === 5) { msg = "Male die Punkte aus (streiche einfach mit dem Finger über die Zahlen). Schreibe danach, welches Bild erschienen ist. Es gibt mehrere Möglichkeiten."; }
-    else if(currentTask === 6) { msg = "Male die App oder das Gerät, das du am meisten magst oder benutzt."; }
-    else if(currentTask === 7) { msg = "Antworte richtig:"; }
-
-    area.innerHTML = `<div class="instruction-box"><h2>AUFGABE ${currentTask}</h2><p style="font-size:1.3rem;">${msg}</p><br><button class="btn-game" style="background:var(--green)" onclick="isShowingInstruction=false; renderCurrentTask();">WEITER</button></div>`;
-    if(audio) new Audio(BASE_URL + audio).play();
-  }
-
-  function nextTask(num) { currentTask = num; subIndex = 0; isShowingInstruction = true; renderCurrentTask(); }
-
-  function handleA8(el, isCorrect) {
-    if(el.dataset.clicked) return;
-    el.dataset.clicked = "true";
-    if(isCorrect) { el.style.background = "#d4edda"; punkte += 5; document.getElementById('score-label').innerText = punkte; } 
-    else { el.style.background = "#f8d7da"; }
-  }
-
-  function checkA2() {
-    const items = document.querySelectorAll('.sort-item');
-    let correct = 0;
-    items.forEach((it, idx) => { if(parseInt(it.getAttribute('data-id')) === (idx+1)) { it.style.background="#d4edda"; correct++; } else it.style.background="#f8d7da"; });
-    if(correct === items.length) { punkte+=20; setTimeout(() => { nextTask(3); }, 1500); }
-    else { versuche++; if(versuche >= 2) setTimeout(() => { nextTask(3); }, 1500); else alert("Falsch!"); }
-  }
-
-  function addBotCmd(type) { botCmds.push(type); document.getElementById('stack').innerHTML += (type==='F'?'⬆️':type==='B'?'⬇️':type==='L'?'↩️':'↪️') + " "; }
-  
-  function runBotLogic() {
-    let i = 0, r = document.getElementById('robot'); let cX=0, cY=4, cD=0;
-    const trees = [{x:1, y:2}, {x:3, y:1}];
-    function step() {
-      if(i < botCmds.length) {
-        let cmd = botCmds[i];
-        if(cmd === 'L') cD = (cD+3)%4; else if(cmd === 'R') cD = (cD+1)%4;
-        else { let m = (cmd==='F'?-1:1); if(cD===0)cY+=m; else if(cD===1)cX-=m; else if(cD===2)cY-=m; else if(cD===3)cX+=m; }
-        cX = Math.max(0, Math.min(4, cX)); cY = Math.max(0, Math.min(4, cY));
-        if(trees.find(t => t.x === cX && t.y === cY)) { alert("Achtung! Baum! 🌳"); renderCurrentTask(); return; }
-        r.style.transform = `rotate(${cD*90}deg)`; r.style.left = (cX*95+5)+"px"; r.style.top = (cY*95+5)+"px";
-        i++; setTimeout(step, 600);
-      } else { if(cX===4 && cY===0) { punkte+=20; nextTask(4); } else { alert("Falsch!"); renderCurrentTask(); } }
-    }
-    step();
-  }
-
-  function translateNow() {
-    let v = document.getElementById('t-name').value; if(!v) return;
-    let binary = v.split('').map(c => c.charCodeAt(0).toString(2).padStart(8,'0')).join(' ');
-    document.getElementById('b-res').innerText = binary; document.getElementById('b-res').classList.remove('hidden'); document.getElementById('count-area').classList.remove('hidden');
-  }
-
-  function loadPixels() {
-    const c = document.getElementById('pixel-canvas'); c.innerHTML = "";
-    for(let i=0; i<15*13; i++){
-      let p = document.createElement('div'); p.className='pix'; p.dataset.p="f"; p.innerText=Math.floor(Math.random()*9)+1;
-      const paint = (el) => {
-        if(el && el.className==='pix' && el.dataset.p==="f"){
-          el.dataset.p="t"; pixelsPainted++; el.style.backgroundImage=`url('${BASE_URL}fruhling.png')`; el.style.backgroundSize="675px 585px";
-          let idx = Array.from(c.children).indexOf(el); el.style.backgroundPosition = `-${(idx%15)*45}px -${Math.floor(idx/15)*45}px`;
-          el.innerText=""; el.style.border="none";
-        }
-      };
-      p.onmouseover = () => paint(p); p.ontouchmove = (e) => { e.preventDefault(); paint(document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY)); };
-      c.appendChild(p);
-    }
-  }
-
-  function checkA5() { savedAntwortA5 = document.getElementById('px-guess').value; nextTask(6); }
-
-  function initPaint() {
-    const cvs = document.getElementById('paint-canvas'); const ctx = cvs.getContext('2d');
-    ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0,0,cvs.width,cvs.height);
-    let d = false;
-    const getXY = (e) => {
-      const r = cvs.getBoundingClientRect();
-      const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
-      const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
-      return [x, y];
-    };
-    cvs.onmousedown = cvs.ontouchstart = (e) => { d = true; ctx.beginPath(); const [x,y] = getXY(e); ctx.moveTo(x,y); };
-    cvs.onmouseup = cvs.ontouchend = () => { d = false; };
-    cvs.onmousemove = cvs.ontouchmove = (e) => { if(!d) return; e.preventDefault(); ctx.lineWidth = currentBrushSize; ctx.lineCap='round'; ctx.strokeStyle = currentColor; const [x,y] = getXY(e); ctx.lineTo(x,y); ctx.stroke(); };
-  }
-
-  function saveDrawingAndNext() {
-    const cvs = document.getElementById('paint-canvas'); drawingData = cvs.toDataURL("image/png"); punkte += 10; nextTask(7);
-  }
-
-  function finishGame() {
-    document.getElementById('avatar-img').classList.add('hidden'); document.getElementById('header').classList.add('hidden');
-    document.getElementById('game-area').innerHTML = `<img src="${BASE_URL}menino.png" width="300"><div style="font-size:70px; font-weight:bold; color:var(--purple); margin:20px 0;">Fertig!</div><p>Punkte: ${punkte}</p>`;
-    fetch(scriptURL, { method: "POST", mode: "no-cors", body: JSON.stringify({ id: studentID, score: punkte, antwortA5: savedAntwortA5, bildData: drawingData }) });
-  }
-</script>
-</body>
-</html>
+        {q: "
