@@ -13,24 +13,18 @@
     .avatar-top { width: 80px; position: absolute; top: 10px; left: 10px; z-index: 10; }
     .btn-game { background: var(--red); color: white; border: none; padding: 15px 25px; font-size: 1.2rem; border-radius: 30px; cursor: pointer; margin: 5px; font-weight: bold; box-shadow: 0px 4px 0px #A70000; }
     .btn-game:active { transform: translateY(2px); box-shadow: 0px 1px 0px #A70000; }
-    .hidden { display: none; }
-    input[type="text"], input[type="number"] { padding: 12px; border-radius: 10px; border: 2px solid var(--blue); font-size: 18px; text-align: center; }
+    .hidden { display: none !important; }
+    input[type="text"], input[type="number"] { padding: 12px; border-radius: 10px; border: 2px solid var(--blue); font-size: 18px; text-align: center; width: 200px; }
     .sort-item, .click-item { background: white; border: 2px solid var(--blue); padding: 12px; margin: 8px auto; border-radius: 12px; font-weight: bold; width: 85%; cursor: pointer; }
     .correct-bg { background-color: #d4edda !important; border-color: #28a745 !important; }
     .error-bg { background-color: #f8d7da !important; border-color: #dc3545 !important; }
     .bluebot-grid { display: grid; grid-template-columns: repeat(5, 95px); grid-template-rows: repeat(5, 95px); gap: 3px; background: #bbb; margin: 10px auto; width: 487px; position: relative; border: 4px solid #333; }
-    .grid-cell { background: white; width: 95px; height: 95px; border: 0.5px solid #eee; }
+    .grid-cell { background: white; width: 95px; height: 95px; }
     #robot { position: absolute; width: 85px; height: 85px; transition: all 0.5s ease; z-index: 10; font-size: 65px; display: flex; align-items: center; justify-content: center; left: 5px; top: 385px; }
-    .tree { position: absolute; font-size: 50px; z-index: 5; }
     .cmd-stack { background: #f9f9f9; border: 2px dashed var(--blue); padding: 10px; min-height: 55px; margin: 10px 0; border-radius: 10px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; font-size: 32px; }
-    #paint-canvas { border: 3px solid var(--blue); background: white; touch-action: none; border-radius: 15px; display: block; margin: 0 auto; }
-    .palette { display: flex; justify-content: center; gap: 8px; margin: 10px; flex-wrap: wrap; }
-    .swatch { width: 35px; height: 35px; border-radius: 50%; border: 2px solid #333; cursor: pointer; }
-    .brush-btn { background: white; border: 2px solid var(--blue); padding: 5px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; }
-    .brush-btn.active { background: var(--blue); color: white; }
+    #paint-canvas { border: 3px solid var(--blue); background: white; touch-action: none; border-radius: 15px; display: block; margin: 0 auto; max-width: 100%; }
     #pixel-canvas { display: grid; grid-template-columns: repeat(15, 45px); margin: 10px auto; width: 675px; border: 2px solid #333; touch-action: none; background: #fff; }
     .pix { width: 45px; height: 45px; border: 0.5px solid #eee; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #ccc; }
-    .finish-text { font-size: 80px; font-weight: bold; color: var(--purple); margin: 20px 0; }
   </style>
 </head>
 <body>
@@ -42,17 +36,19 @@
 </div>
 
 <div class="container">
-  <img src="" id="avatar" class="avatar-top hidden">
+  <img src="" id="avatar-img" class="avatar-top hidden">
+  
   <div id="game-area">
     <div id="screen-intro">
-      <video id="vid" width="280" src="" playsinline></video><br>
-      <button class="btn-game" onclick="playOnce()">▶️ Play</button>
+      <video id="vid" width="280" playsinline></video><br>
+      <button class="btn-game" onclick="playOnce()">▶️ Play Video</button>
       <h2>Willkommen!</h2>
       <p>Gib deinen Code ein:</p>
       <input type="text" id="student-code" placeholder="Code...">
       <br><br>
       <button class="btn-game" style="background:var(--green);" onclick="initGame()">SPIEL STARTEN</button>
     </div>
+
     <div id="screen-tasks" class="hidden">
       <div id="task-content"></div>
       <p id="feedback" style="font-weight:bold; color:var(--red); min-height:30px; margin-top:10px;"></p>
@@ -61,18 +57,187 @@
 </div>
 
 <script>
+  // ==========================================
   // CONFIGURAÇÃO DOS LINKS
+  // ==========================================
   const BASE_URL = "https://eucidio.github.io/test/"; 
   const scriptURL = "https://script.google.com/macros/s/AKfycbzbds4zjk6QHPEjkyjVJ_zmXBF1MRgcJOjlX45SfIZlTnvTiw3iSYxGeGUZU6mCd0OIRA/exec"; 
 
   let studentID = "", punkte = 0, tempo = 40 * 60, currentTask = 1, versuche = 0, subIndex = 0;
-  let botX = 0, botY = 4, botDir = 0, botCmds = [];
-  const trees = [{x: 2, y: 1}, {x: 1, y: 3}];
-  let pixelsPainted = 0, currentColor = "#000000", currentBrushSize = 5;
+  let botX = 0, botY = 4, botCmds = [];
+  let pixelsPainted = 0, currentColor = "#000000", currentBrushSize = 8;
   let savedAntwortA5 = "";
 
+  // Dados da Tarefa 1
   const a1Data = [
     { n: 'Bluetooth', i: BASE_URL+'bluetooth.jpg', s: BASE_URL+'bluetooth.mp3', o: ['Bluetooth', 'Bluetooh', 'Bluetot'] },
     { n: 'Airdrop', i: BASE_URL+'airdrop.png', s: BASE_URL+'airdrop.mp3', o: ['Airdrop', 'Aidrop', 'Airdropo'] },
     { n: 'Browser', i: BASE_URL+'browser.png', s: BASE_URL+'browser.mp3', o: ['Browser', 'Browsher', 'Brouser'] },
-    { n: 'Such
+    { n: 'Suchmaschine', i: BASE_URL+'suchmachine.jpg', s: BASE_URL+'suchmachine.mp3', o: ['Suchmaschine', 'Suchmaschina', 'Suchmaschin'] }
+  ];
+
+  // Função para dar play no vídeo
+  function playOnce() { 
+    let v = document.getElementById('vid'); 
+    v.src = BASE_URL + "menina_video.mp4";
+    v.play().catch(e => console.log("Video wait click")); 
+  }
+
+  // FUNÇÃO QUE FAZ PASSAR DA PRIMEIRA PÁGINA
+  function initGame() {
+    studentID = document.getElementById('student-code').value;
+    if(!studentID) { alert("Bitte Code eingeben!"); return; }
+    
+    // Esconde tela inicial e mostra as tarefas
+    document.getElementById('screen-intro').classList.add('hidden');
+    
+    // Configura o avatar
+    let av = document.getElementById('avatar-img');
+    av.src = BASE_URL + "menina.png";
+    av.classList.remove('hidden');
+    
+    document.getElementById('screen-tasks').classList.remove('hidden');
+    
+    // Inicia a primeira tarefa
+    renderCurrentTask();
+    
+    // Inicia cronômetro
+    setInterval(() => { 
+      if(tempo > 0){ 
+        tempo--; 
+        let m = Math.floor(tempo/60), s = tempo%60; 
+        document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`; 
+      } 
+    }, 1000);
+  }
+
+  function renderCurrentTask() {
+    const area = document.getElementById('task-content');
+    document.getElementById('task-num').innerText = currentTask;
+    area.innerHTML = ""; 
+
+    if(currentTask === 1) {
+      if(subIndex >= a1Data.length) { currentTask = 2; subIndex = 0; renderCurrentTask(); return; }
+      let it = a1Data[subIndex];
+      area.innerHTML = `<h3>Aufgabe 1</h3><img src="${it.i}" height="150"><br><button class="btn-game" onclick="new Audio('${it.s}').play()">🔈 HÖREN</button><div id="opts"></div>`;
+      it.o.forEach(opt => {
+        const btn = document.createElement('button'); btn.className = "btn-game"; btn.innerText = opt;
+        btn.onclick = () => { if(opt === it.n){ punkte+=10; subIndex++; renderCurrentTask(); } else alert("Falsch!"); };
+        document.getElementById('opts').appendChild(btn);
+      });
+    } else if(currentTask === 2) {
+      const a2D = ["Essen aufräumen","Den Tisch abwischen","Hände waschen","Hände abtrocknen","iPad-Akku prüfen","iPad auf den Tisch legen"];
+      area.innerHTML = `<h3>Aufgabe 2</h3><div id="sort-list">${a2D.map((t, i) => `<div class="sort-item" data-id="${i+1}">${t}</div>`).sort(()=>Math.random()-0.5).join('')}</div><button class="btn-game" onclick="checkA2()">PRÜFEN</button>`;
+      new Sortable(document.getElementById('sort-list'), { animation: 150 });
+    } else if(currentTask === 3) {
+      botCmds = []; botX = 0; botY = 4;
+      area.innerHTML = `<h3>Aufgabe 3: Bluebot</h3><div class="bluebot-grid"><div style="position:absolute;top:10px;right:10px;font-size:50px;">🏫</div><div id="robot">🤖</div>${Array(25).fill('<div class="grid-cell"></div>').join('')}</div>
+        <div class="cmd-stack" id="stack"> </div>
+        <div><button class="btn-game" onclick="addBotCmd('F')">⬆️</button><button class="btn-game" onclick="addBotCmd('B')">⬇️</button><button class="btn-game" onclick="addBotCmd('L')">↩️</button><button class="btn-game" onclick="addBotCmd('R')">↪️</button></div>
+        <button id="btnA3" class="btn-game" style="background:var(--green)" onclick="runBotLogic()">GO!</button>`;
+    } else if(currentTask === 4) {
+      area.innerHTML = `<h3>Aufgabe 4: Binär</h3><input type="text" id="t-name" placeholder="Name..."><button class="btn-game" onclick="translateNow()">Verwandeln!</button>
+        <div id="b-res" class="hidden" style="background:#eee;padding:15px;margin:10px;word-break:break-all;font-family:monospace;border:2px dashed var(--blue);"></div>
+        <div id="count-area" class="hidden"><br><button class="btn-game" onclick="punkte+=20; currentTask=5; renderCurrentTask();">WEITER</button></div>`;
+    } else if(currentTask === 5) {
+      area.innerHTML = `<h3>Aufgabe 5: Pixel Art</h3><div id="pixel-canvas"></div><br><input type="text" id="px-guess" placeholder="Was siehst du?"><button class="btn-game" onclick="checkA5()">WEITER</button>`;
+      loadPixels();
+    } else if(currentTask === 6) {
+      area.innerHTML = `<h3>Aufgabe 6: Malen</h3><canvas id="paint-canvas" width="600" height="400"></canvas><br><button class="btn-game" onclick="punkte+=10; currentTask=7; subIndex=0; renderCurrentTask()">FERTIG</button>`;
+      initPaint();
+    } else if(currentTask === 7) {
+      const qA = [{q:"Alter?", i:BASE_URL+"Jahr.jpg", o:["Nein.","Ja."], c:0}, {q:"Adresse?", i:BASE_URL+"Adresse.jpg", o:["Senden.","Eltern rufen."], c:1}];
+      if(subIndex >= qA.length) { currentTask=8; renderCurrentTask(); return; }
+      area.innerHTML = `<h3>Aufgabe 7</h3><img src="${qA[subIndex].i}" height="150"><p>${qA[subIndex].q}</p><div id="q-opts"></div>`;
+      qA[subIndex].o.forEach((o, j) => {
+        const btn = document.createElement('div'); btn.className = "sort-item"; btn.innerText = o;
+        btn.onclick = () => { if(j === qA[subIndex].c) punkte+=10; subIndex++; renderCurrentTask(); };
+        document.getElementById('q-opts').appendChild(btn);
+      });
+    } else if(currentTask === 8) {
+      area.innerHTML = `<h3>Aufgabe 8</h3><div class="click-item" data-bad="true">Essen am iPad</div><button class="btn-game" onclick="finishGame()">FERTIG</button>`;
+    }
+    document.getElementById('score-label').innerText = punkte;
+  }
+
+  // --- FUNÇÕES DE LÓGICA ---
+  function checkA2() {
+    const list = [...document.querySelectorAll('.sort-item')];
+    const isCorrect = list.every((el, i) => el.dataset.id == (i+1));
+    if(isCorrect) { punkte += 20; currentTask = 3; renderCurrentTask(); } else alert("Falsche Reihenfolge!");
+  }
+
+  function addBotCmd(type) { botCmds.push(type); document.getElementById('stack').innerHTML += (type==='F'?'⬆️':type==='B'?'⬇️':type==='L'?'↩️':'↪️') + " "; }
+  
+  function runBotLogic() {
+    let i = 0, r = document.getElementById('robot'); let cX=0, cY=4, cD=0;
+    function step() {
+      if(i < botCmds.length) {
+        let cmd = botCmds[i];
+        if(cmd === 'L') cD = (cD+3)%4; else if(cmd === 'R') cD = (cD+1)%4;
+        else { let m = (cmd==='F'?-1:1); if(cD===0)cY+=m; else if(cD===1)cX-=m; else if(cD===2)cY-=m; else if(cD===3)cX+=m; }
+        r.style.transform = `rotate(${cD*90}deg)`; r.style.left = (Math.max(0,Math.min(4,cX))*95+5)+"px"; r.style.top = (Math.max(0,Math.min(4,cY))*95+5)+"px";
+        i++; setTimeout(step, 600);
+      } else { if(cX===4 && cY===0) { punkte+=20; currentTask=4; renderCurrentTask(); } else alert("Ziel nicht erreicht!"); }
+    }
+    step();
+  }
+
+  function translateNow() {
+    let v = document.getElementById('t-name').value;
+    document.getElementById('b-res').innerText = v.split('').map(c=>c.charCodeAt(0).toString(2).padStart(8,'0')).join(' ');
+    document.getElementById('b-res').classList.remove('hidden'); document.getElementById('count-area').classList.remove('hidden');
+  }
+
+  function loadPixels() {
+    const c = document.getElementById('pixel-canvas');
+    for(let i=0; i<15*13; i++){
+      let p = document.createElement('div'); p.className='pix'; p.dataset.p="f"; p.innerText=Math.floor(Math.random()*9)+1;
+      p.onmouseover = p.ontouchmove = (e) => {
+        let t = e.touches ? e.touches[0] : e;
+        let target = document.elementFromPoint(t.clientX, t.clientY);
+        if(target && target.className==='pix' && target.dataset.p==="f"){
+          target.dataset.p="t"; pixelsPainted++;
+          target.style.background=`url('${BASE_URL}fruhling.png')`; target.style.backgroundSize="675px 585px";
+          let idx = Array.from(c.children).indexOf(target);
+          target.style.backgroundPosition = `-${(idx%15)*45}px -${Math.floor(idx/15)*45}px`;
+          target.innerText=""; target.style.border="none";
+        }
+      };
+      c.appendChild(p);
+    }
+  }
+
+  function checkA5() { savedAntwortA5 = document.getElementById('px-guess').value; currentTask = 6; renderCurrentTask(); }
+
+  function initPaint() {
+    const cvs = document.getElementById('paint-canvas'); const ctx = cvs.getContext('2d');
+    let d = false;
+    cvs.onmousedown = cvs.ontouchstart = () => d = true;
+    cvs.onmouseup = cvs.ontouchend = () => { d = false; ctx.beginPath(); };
+    cvs.onmousemove = cvs.ontouchmove = (e) => {
+      if(!d) return; ctx.lineWidth = 8; ctx.lineCap='round'; ctx.strokeStyle = "#000";
+      const r = cvs.getBoundingClientRect();
+      const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+      const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+      ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y);
+    };
+  }
+
+  function finishGame() {
+    punkte += 10;
+    document.getElementById('avatar-img').classList.add('hidden');
+    document.getElementById('header').classList.add('hidden');
+    document.getElementById('game-area').innerHTML = `
+      <img src="${BASE_URL}menino.png" width="350">
+      <div style="font-size:60px; font-weight:bold; color:var(--purple);">Fertig!</div>
+      <p style="font-size:2rem;">Punkte: ${punkte}</p>`;
+
+    fetch(scriptURL, {
+      method: "POST", mode: "no-cors", cache: "no-cache",
+      body: JSON.stringify({ id: studentID, score: punkte, antwortA5: savedAntwortA5 })
+    });
+  }
+</script>
+</body>
+</html>
