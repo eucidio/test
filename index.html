@@ -254,6 +254,7 @@
     document.getElementById('avatar-img').classList.add('hidden');
     document.getElementById('header').classList.add('hidden');
     document.getElementById('game-area').innerHTML = `<img src="${BASE_URL}menino.png" width="300"><div style="font-size:70px; font-weight:bold; color:var(--purple); margin:20px 0;">Fertig!</div><p>Punkte: ${punkte}</p>`;
+    
     fetch(scriptURL, { 
       method: "POST", 
       mode: "no-cors", 
@@ -264,7 +265,7 @@
         bildData: drawingData 
       }) 
     });
-  }
+  } // <-- Fechamento da função finishGame
 </script>
 </body>
 </html>
