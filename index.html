@@ -15,7 +15,7 @@
     .btn-game:active { transform: translateY(2px); box-shadow: 0px 1px 0px #A70000; }
     .hidden { display: none !important; }
     input[type="text"] { padding: 15px; border-radius: 15px; border: 3px solid var(--blue); font-size: 22px; text-align: center; width: 80%; max-width: 300px; background: #fff; margin: 10px 0; }
-    .sort-item { background: white; border: 2px solid var(--blue); padding: 12px; margin: 8px auto; border-radius: 12px; font-weight: bold; width: 85%; cursor: pointer; transition: background 0.3s; }
+    .sort-item, .click-item { background: white; border: 2px solid var(--blue); padding: 12px; margin: 8px auto; border-radius: 12px; font-weight: bold; width: 85%; cursor: pointer; transition: background 0.3s; }
     .bluebot-grid { display: grid; grid-template-columns: repeat(5, 95px); grid-template-rows: repeat(5, 95px); gap: 3px; background: #bbb; margin: 10px auto; width: 487px; position: relative; border: 4px solid #333; }
     .grid-cell { background: white; width: 95px; height: 95px; border: 0.5px solid #eee; }
     #robot { position: absolute; width: 85px; height: 85px; transition: all 0.5s ease; z-index: 10; font-size: 65px; display: flex; align-items: center; justify-content: center; left: 5px; top: 385px; }
@@ -121,8 +121,8 @@
         <div><button class="btn-game" onclick="addBotCmd('F')">⬆️</button><button class="btn-game" onclick="addBotCmd('B')">⬇️</button><button class="btn-game" onclick="addBotCmd('L')">↩️</button><button class="btn-game" onclick="addBotCmd('R')">↪️</button></div>
         <button id="btnA3" class="btn-game" style="background:var(--green)" onclick="runBotLogic()">GO!</button>`;
     } else if(currentTask === 4) {
-      area.innerHTML = `<h3>Aufgabe 4: Binär</h3><input type="text" id="t-name" placeholder="Name..."><button class="btn-game" onclick="translateNow()">Verwandeln!</button>
-        <div id="b-res" class="hidden" style="background:#eee;padding:15px;margin:10px;word-break:break-all;font-family:monospace;"></div>
+      area.innerHTML = `<h3>Aufgabe 4: Binär</h3><p>Schreibe deinen Namen:</p><input type="text" id="t-name" placeholder="Name..."><br><button class="btn-game" onclick="translateNow()">Verwandeln!</button>
+        <div id="b-res" class="hidden" style="background:#eee;padding:15px;margin:10px;word-break:break-all;font-family:monospace;border:2px dashed var(--blue);"></div>
         <br><button class="btn-game" onclick="punkte+=20; currentTask=5; renderCurrentTask();">WEITER</button>`;
     } else if(currentTask === 5) {
       area.innerHTML = `<h3>Aufgabe 5: Pixel Art</h3><div id="pixel-canvas"></div><br><input type="text" id="px-guess" placeholder="Was?"><button class="btn-game" onclick="checkA5()">WEITER</button>`;
@@ -131,7 +131,12 @@
       area.innerHTML = `<h3>Aufgabe 6: Malen</h3><canvas id="paint-canvas" width="600" height="400"></canvas><br><button class="btn-game" onclick="punkte+=10; currentTask=7; subIndex=0; renderCurrentTask()">FERTIG</button>`;
       initPaint();
     } else if(currentTask === 7) {
-      const qA = [{q:"Alter?", i:BASE_URL+"Jahr.jpg", o:["Nein!","Ja."], c:0}, {q:"Fotos?", i:BASE_URL+"Fotos.jpg", o:["Ja.","Niemals!"], c:1}];
+      const qA = [
+        {q:"Alter?", i:BASE_URL+"jahr.jpg", o:["Nein!","Ja."], c:0},
+        {q:"Adresse?", i:BASE_URL+"adresse.jpg", o:["Ja.","Eltern fragen!"], c:1},
+        {q:"Kaufen?", i:BASE_URL+"kaufen.jpg", o:["Nein!","Ja."], c:0},
+        {q:"Fotos?", i:BASE_URL+"fotos.jpg", o:["Ja.","Niemals!"], c:1}
+      ];
       if(subIndex >= qA.length) { currentTask=8; renderCurrentTask(); return; }
       area.innerHTML = `<h3>Aufgabe 7</h3><img src="${qA[subIndex].i}" height="180"><p>${qA[subIndex].q}</p><div id="q-opts"></div>`;
       qA[subIndex].o.forEach((o, j) => {
@@ -140,7 +145,12 @@
         document.getElementById('q-opts').appendChild(btn);
       });
     } else if(currentTask === 8) {
-      area.innerHTML = `<h3>Aufgabe 8</h3><div class="click-item" data-bad="true" onclick="this.style.background='#f8d7da'">Am iPad essen</div><button class="btn-game" onclick="finishGame()">ENDE</button>`;
+      area.innerHTML = `<h3>Aufgabe 8</h3><p>Was darf man com o iPad <b>NICHT</b> tun?</p>
+        <div class="click-item" data-bad="true" onclick="this.style.background='#f8d7da'">Am iPad essen</div>
+        <div class="click-item" data-bad="true" onclick="this.style.background='#f8d7da'">iPad auf den Boden legen</div>
+        <div class="click-item" data-bad="true" onclick="this.style.background='#f8d7da'">Ohne Hülle tragen</div>
+        <div class="click-item" data-bad="true" onclick="this.style.background='#f8d7da'">Am Kabel ziehen</div>
+        <br><button class="btn-game" style="background:var(--green)" onclick="finishGame()">ENDE</button>`;
     }
     document.getElementById('score-label').innerText = punkte;
   }
@@ -148,33 +158,24 @@
   function checkA2() {
     const items = document.querySelectorAll('.sort-item');
     let correctCount = 0;
-    
-    // PINTAR AS CORES FORÇADAMENTE
     items.forEach((item, index) => {
-      const correctId = index + 1;
       const currentId = parseInt(item.getAttribute('data-id'));
-      
-      if (currentId === correctId) {
-        item.style.backgroundColor = "#d4edda"; // Verde
-        item.style.borderColor = "#28a745";
+      if (currentId === (index + 1)) {
+        item.style.backgroundColor = "#d4edda";
         correctCount++;
       } else {
-        item.style.backgroundColor = "#f8d7da"; // Vermelho
-        item.style.borderColor = "#dc3545";
+        item.style.backgroundColor = "#f8d7da";
       }
     });
-
     if (correctCount === items.length) {
       punkte += 20;
       setTimeout(() => { currentTask = 3; versuche = 0; renderCurrentTask(); }, 1500);
     } else {
       versuche++;
       if (versuche >= 2) {
-        alert("Zweiter Versuch beendet. Weiter geht's!");
+        alert("Weiter!");
         setTimeout(() => { currentTask = 3; versuche = 0; renderCurrentTask(); }, 1500);
-      } else {
-        alert("Falsch! Versuch es noch einmal.");
-      }
+      } else { alert("Noch einmal."); }
     }
   }
 
@@ -196,8 +197,11 @@
 
   function translateNow() {
     let v = document.getElementById('t-name').value;
-    document.getElementById('b-res').innerText = v.split('').map(c=>c.charCodeAt(0).toString(2).padStart(8,'0')).join(' ');
-    document.getElementById('b-res').classList.remove('hidden');
+    if(!v) return alert("Gib deinen Namen ein!");
+    let binary = v.split('').map(c => c.charCodeAt(0).toString(2).padStart(8,'0')).join(' ');
+    let resDiv = document.getElementById('b-res');
+    resDiv.innerText = binary;
+    resDiv.classList.remove('hidden');
   }
 
   function loadPixels() {
