@@ -27,7 +27,7 @@
     .brush-btn.active { background: var(--blue); color: white; }
     #pixel-canvas { display: grid; grid-template-columns: repeat(15, 45px); margin: 10px auto; width: 675px; border: 2px solid #333; touch-action: none; background: #fff; }
     .pix { width: 45px; height: 45px; border: 0.5px solid #eee; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #ccc; }
-    .instruction-text { font-size: 1.1rem; color: #444; margin-bottom: 15px; background: #f0f8ff; padding: 10px; border-radius: 10px; line-height: 1.4; }
+    .instruction-box { background: #fdfdfd; border: 3px dashed var(--blue); padding: 30px; border-radius: 20px; margin: 20px auto; max-width: 80%; }
   </style>
 </head>
 <body>
@@ -64,6 +64,7 @@
   let botX = 0, botY = 4, botCmds = [];
   let pixelsPainted = 0, currentColor = "#000000", currentBrushSize = 8;
   let savedAntwortA5 = "", drawingData = ""; 
+  let isShowingInstruction = true;
 
   window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -106,58 +107,43 @@
     const area = document.getElementById('task-content');
     area.innerHTML = ""; 
 
+    if (isShowingInstruction && currentTask < 8) {
+        showInstructionScreen(area);
+        return;
+    }
+
     if(currentTask === 1) {
-      if(subIndex >= a1Data.length) { currentTask = 2; subIndex = 0; renderCurrentTask(); return; }
+      if(subIndex >= a1Data.length) { nextTask(2); return; }
       let it = a1Data[subIndex];
-      area.innerHTML = `<h3>AUFGABE 1</h3>
-        <p class="instruction-text">Sieh dir das Bild an und höre das Audio. Dann klicke auf die Antwort, die du richtig findest. Du hast zwei Versuche.</p>
-        <img src="${it.i}" height="180"><br>
-        <button class="btn-game" onclick="new Audio('${BASE_URL}aufgabe1.mp3').play()">🔈 AUFGABE HÖREN</button>
-        <button class="btn-game" style="background:var(--purple)" onclick="new Audio('${it.s}').play()">🔈 WORT HÖREN</button>
-        <div id="opts"></div>`;
+      area.innerHTML = `<h3>AUFGABE 1</h3><img src="${it.i}" height="180"><br><button class="btn-game" onclick="new Audio('${it.s}').play()">🔈 HÖREN</button><div id="opts"></div>`;
       it.o.forEach(opt => {
         const btn = document.createElement('button'); btn.className = "btn-game"; btn.innerText = opt;
         btn.onclick = () => { 
           if(opt === it.n){ punkte+=10; subIndex++; versuche=0; renderCurrentTask(); } 
-          else { 
-            versuche++; 
-            if(versuche >= 2) { subIndex++; versuche=0; renderCurrentTask(); }
-            else alert("Falsch! Versuche es noch einmal.");
-          }
+          else { versuche++; if(versuche >= 2) { subIndex++; versuche=0; renderCurrentTask(); } else alert("Falsch!"); }
         };
         document.getElementById('opts').appendChild(btn);
       });
     } else if(currentTask === 2) {
       const a2D = ["Essen aufräumen","Den Tisch abwischen","Hände waschen","Hände abtrocknen","iPad-Akku prüfen","iPad auf den Tisch legen"];
-      area.innerHTML = `<h3>AUFGABE 2</h3>
-        <p class="instruction-text">Du hast gerade gefrühstückt und musst eine Aufgabe auf dem iPad machen. Was musst du jetzt tun?</p>
-        <div id="sort-list">${a2D.map((t, i) => `<div class="sort-item" data-id="${i+1}">${t}</div>`).sort(()=>Math.random()-0.5).join('')}</div>
-        <button class="btn-game" onclick="checkA2()">PRÜFEN</button>`;
+      area.innerHTML = `<h3>AUFGABE 2</h3><div id="sort-list">${a2D.map((t, i) => `<div class="sort-item" data-id="${i+1}">${t}</div>`).sort(()=>Math.random()-0.5).join('')}</div><button class="btn-game" onclick="checkA2()">PRÜFEN</button>`;
       new Sortable(document.getElementById('sort-list'), { animation: 150 });
     } else if(currentTask === 3) {
       botCmds = []; botX = 0; botY = 4;
       const trees = [{x:1, y:2}, {x:3, y:1}]; 
-      area.innerHTML = `<h3>AUFGABE 3</h3>
-        <p class="instruction-text">Klicke auf die Befehle, die du dem Bluebot geben musst, damit er zur Schule kommt. Es gibt mehrere richtige Antworten.</p>
-        <div class="bluebot-grid"><div style="position:absolute;top:15px;right:15px;font-size:50px;z-index:1;">🏫</div>${trees.map(t => `<div style="position:absolute; left:${t.x*95+25}px; top:${t.y*95+20}px; font-size:40px; z-index:1;">🌳</div>`).join('')}<div id="robot">🤖</div>${Array(25).fill('<div class="grid-cell"></div>').join('')}</div>
+      area.innerHTML = `<h3>AUFGABE 3</h3><div class="bluebot-grid"><div style="position:absolute;top:15px;right:15px;font-size:50px;z-index:1;">🏫</div>${trees.map(t => `<div style="position:absolute; left:${t.x*95+25}px; top:${t.y*95+20}px; font-size:40px; z-index:1;">🌳</div>`).join('')}<div id="robot">🤖</div>${Array(25).fill('<div class="grid-cell"></div>').join('')}</div>
         <div class="cmd-stack" id="stack"> </div>
         <div><button class="btn-game" onclick="addBotCmd('F')">⬆️</button><button class="btn-game" onclick="addBotCmd('B')">⬇️</button><button class="btn-game" onclick="addBotCmd('L')">↩️</button><button class="btn-game" onclick="addBotCmd('R')">↪️</button></div>
         <button class="btn-game" style="background:var(--blue)" onclick="renderCurrentTask()">RESET 🔄</button><button id="btnA3" class="btn-game" style="background:var(--green)" onclick="runBotLogic()">GO!</button>`;
     } else if(currentTask === 4) {
-      area.innerHTML = `<h3>AUFGABE 4</h3>
-        <p class="instruction-text">Wie viele 0 und wie viele 1 hat dein Name (Vorname und Nachname)?</p>
-        <input type="text" id="t-name" placeholder="Name..."><button class="btn-game" onclick="translateNow()">Verwandeln!</button>
+      area.innerHTML = `<h3>AUFGABE 4</h3><input type="text" id="t-name" placeholder="Name..."><button class="btn-game" onclick="translateNow()">Verwandeln!</button>
         <div id="b-res" class="hidden" style="background:#eee;padding:15px;margin:10px;word-break:break-all;font-family:monospace;border:2px dashed var(--blue);"></div>
-        <div id="count-area" class="hidden"><br>0: <input type="number" id="z" style="width:60px"> 1: <input type="number" id="o" style="width:60px"><br><button class="btn-game" onclick="punkte+=20; currentTask=5; renderCurrentTask();">PRÜFEN</button></div>`;
+        <div id="count-area" class="hidden"><br>0: <input type="number" id="z" style="width:60px"> 1: <input type="number" id="o" style="width:60px"><br><button class="btn-game" onclick="punkte+=20; nextTask(5);">PRÜFEN</button></div>`;
     } else if(currentTask === 5) {
-      area.innerHTML = `<h3>AUFGABE 5</h3>
-        <p class="instruction-text">Male die Punkte aus (streiche einfach mit dem Finger über die Zahlen). Schreibe danach, welches Bild erschienen ist.</p>
-        <div id="pixel-canvas"></div><br><input type="text" id="px-guess" placeholder="Was?"><button class="btn-game" onclick="checkA5()">WEITER</button>`;
+      area.innerHTML = `<h3>AUFGABE 5</h3><div id="pixel-canvas"></div><br><input type="text" id="px-guess" placeholder="Was?"><button class="btn-game" onclick="checkA5()">WEITER</button>`;
       loadPixels();
     } else if(currentTask === 6) {
-      area.innerHTML = `<h3>AUFGABE 6</h3>
-        <p class="instruction-text">Male die App oder das Gerät, das du am meisten magst oder benutzt.</p>
-        <div class="palette">${['#000','#7F7F7F','#880015','#F00','#FF7F27','#FF0','#0F0','#00A2E8','#00F','#A349A4','#FFAEC9','#FFF'].map(c=>`<div class="swatch" style="background:${c}" onclick="currentColor='${c}'"></div>`).join('')}</div>
+      area.innerHTML = `<h3>AUFGABE 6</h3><div class="palette">${['#000','#7F7F7F','#880015','#F00','#FF7F27','#FF0','#0F0','#00A2E8','#00F','#A349A4','#FFAEC9','#FFF'].map(c=>`<div class="swatch" style="background:${c}" onclick="currentColor='${c}'"></div>`).join('')}</div>
         <div class="palette"><button class="brush-btn" onclick="currentBrushSize=3">Fein</button><button class="brush-btn active" onclick="currentBrushSize=8">Mittel</button><button class="brush-btn" onclick="currentBrushSize=15">Groß</button><button class="brush-btn" onclick="currentColor='#FFFFFF'">🧽</button></div>
         <canvas id="paint-canvas" width="600" height="400"></canvas><br><button class="btn-game" onclick="saveDrawingAndNext()">FERTIG</button>`;
       initPaint();
@@ -166,10 +152,10 @@
         {q: "Jemand fragt dich im Internet: 'Wie alt bist du?'. Was machst du?", i: BASE_URL + "jahr.png", o: ["Ich sage mein Alter.", "Ich rufe meine Eltern und zeige es ihnen."], c: 1},
         {q: "Jemand fragt nach deiner Adresse. Was machst du?", i: BASE_URL + "adresse.png", o: ["Ich schicke sie sofort.", "Ich frage, warum ele isso saber quer.", "Ich rufe meine Eltern und zeige es ihnen."], c: 2},
         {q: "Du siehst Werbung in einer Spiele-App. Was machst du?", i: BASE_URL + "kaufen.png", o: ["Ich klicke drauf, um zu gucken.", "Ich bitte meine Eltern, die App zu löschen."], c: 1},
-        {q: "Jemand möchte, dass du Fotos oder Videos schickst. Was machst du?", i: BASE_URL + "fotos.png", o: ["Ich schicke die Fotos.", "Ich rufe meine Eltern und zeige es ihnen."], c: 1}
+        {q: "Jemand möchte, dass du Fotos or Videos schickst. Was machst du?", i: BASE_URL + "fotos.png", o: ["Ich schicke die Fotos.", "Ich rufe meine Eltern und zeige es ihnen."], c: 1}
       ];
-      if(subIndex >= qA.length) { currentTask=8; subIndex=0; renderCurrentTask(); return; }
-      area.innerHTML = `<h3>AUFGABE 7</h3><p class="instruction-text">Antworte richtig:</p><img src="${qA[subIndex].i}" height="180"><p>${qA[subIndex].q}</p><div id="q-opts"></div>`;
+      if(subIndex >= qA.length) { nextTask(8); return; }
+      area.innerHTML = `<h3>AUFGABE 7</h3><img src="${qA[subIndex].i}" height="180"><p>${qA[subIndex].q}</p><div id="q-opts"></div>`;
       qA[subIndex].o.forEach((o, j) => {
         const btn = document.createElement('div'); btn.className = "sort-item"; btn.innerText = o;
         btn.onclick = () => { if(j === qA[subIndex].c) punkte+=10; subIndex++; renderCurrentTask(); };
@@ -178,7 +164,7 @@
     } else if(currentTask === 8) {
       area.innerHTML = `<h3>AUFGABE 8</h3><p>Was darfst du mit dem iPad <b>NICHT</b> machen? (Klicke an):</p>
         <div class="click-item" onclick="handleA8(this, true)">Beim iPad-Spielen essen</div>
-        <div class="click-item" onclick="handleA8(this, true)">Laden erst bei unter 2% Akku</div>
+        <div class="click-item" onclick="handleA8(this, true)">Laden erst bei unter 20% Akku</div>
         <div class="click-item" onclick="handleA8(this, true)">Das iPad mit nur einer Hand tragen.</div>
         <div class="click-item" onclick="handleA8(this, false)">Das iPad immer sicher auf den Tisch legen.</div>
         <div class="click-item" onclick="handleA8(this, true)">Das iPad auf den Boden legen</div>
@@ -188,24 +174,36 @@
     document.getElementById('score-label').innerText = punkte;
   }
 
+  function showInstructionScreen(area) {
+    let msg = "";
+    let audio = "";
+    if(currentTask === 1) { msg = "Sieh dir das Bild an und höre das Audio. Dann klicke auf die Antwort, die du richtig findest. Du hast zwei Versuche. Wenn du gleich beim ersten Mal richtig bist, gehen wir schon zum nächsten Bild."; audio = "aufgabe1.mp3"; }
+    else if(currentTask === 2) { msg = "Du hast gerade gefrühstückt und musst eine Aufgabe auf dem iPad machen. Was musst du jetzt tun?"; }
+    else if(currentTask === 3) { msg = "Klicke auf die Befehle, die du dem Bluebot geben musst, damit er zur Schule kommt. Es gibt mehrere richtige Antworten."; }
+    else if(currentTask === 4) { msg = "Wie viele 0 und wie viele 1 hat dein Name (Vorname und Nachname)?"; }
+    else if(currentTask === 5) { msg = "Male die Punkte aus (streiche einfach mit dem Finger über die Zahlen). Schreibe danach, welches Bild erschienen ist. Es gibt mehrere Möglichkeiten."; }
+    else if(currentTask === 6) { msg = "Male die App oder das Gerät, das du am meisten magst oder benutzt."; }
+    else if(currentTask === 7) { msg = "Antworte richtig:"; }
+
+    area.innerHTML = `<div class="instruction-box"><h2>AUFGABE ${currentTask}</h2><p style="font-size:1.3rem;">${msg}</p><br><button class="btn-game" style="background:var(--green)" onclick="isShowingInstruction=false; renderCurrentTask();">WEITER</button></div>`;
+    if(audio) new Audio(BASE_URL + audio).play();
+  }
+
+  function nextTask(num) { currentTask = num; subIndex = 0; isShowingInstruction = true; renderCurrentTask(); }
+
   function handleA8(el, isCorrect) {
     if(el.dataset.clicked) return;
     el.dataset.clicked = "true";
-    if(isCorrect) {
-      el.style.background = "#d4edda";
-      punkte += 5; // 5 PONTOS POR RESPOSTA CERTA
-      document.getElementById('score-label').innerText = punkte;
-    } else {
-      el.style.background = "#f8d7da";
-    }
+    if(isCorrect) { el.style.background = "#d4edda"; punkte += 5; document.getElementById('score-label').innerText = punkte; } 
+    else { el.style.background = "#f8d7da"; }
   }
 
   function checkA2() {
     const items = document.querySelectorAll('.sort-item');
     let correct = 0;
     items.forEach((it, idx) => { if(parseInt(it.getAttribute('data-id')) === (idx+1)) { it.style.background="#d4edda"; correct++; } else it.style.background="#f8d7da"; });
-    if(correct === items.length) { punkte+=20; setTimeout(() => { currentTask=3; versuche=0; renderCurrentTask(); }, 1500); }
-    else { versuche++; if(versuche >= 2) setTimeout(() => { currentTask=3; versuche=0; renderCurrentTask(); }, 1500); else alert("Falsch!"); }
+    if(correct === items.length) { punkte+=20; setTimeout(() => { nextTask(3); }, 1500); }
+    else { versuche++; if(versuche >= 2) setTimeout(() => { nextTask(3); }, 1500); else alert("Falsch!"); }
   }
 
   function addBotCmd(type) { botCmds.push(type); document.getElementById('stack').innerHTML += (type==='F'?'⬆️':type==='B'?'⬇️':type==='L'?'↩️':'↪️') + " "; }
@@ -222,7 +220,7 @@
         if(trees.find(t => t.x === cX && t.y === cY)) { alert("Achtung! Baum! 🌳"); renderCurrentTask(); return; }
         r.style.transform = `rotate(${cD*90}deg)`; r.style.left = (cX*95+5)+"px"; r.style.top = (cY*95+5)+"px";
         i++; setTimeout(step, 600);
-      } else { if(cX===4 && cY===0) { punkte+=20; currentTask=4; renderCurrentTask(); } else { alert("Falsch!"); renderCurrentTask(); } }
+      } else { if(cX===4 && cY===0) { punkte+=20; nextTask(4); } else { alert("Falsch!"); renderCurrentTask(); } }
     }
     step();
   }
@@ -249,7 +247,7 @@
     }
   }
 
-  function checkA5() { savedAntwortA5 = document.getElementById('px-guess').value; currentTask = 6; renderCurrentTask(); }
+  function checkA5() { savedAntwortA5 = document.getElementById('px-guess').value; nextTask(6); }
 
   function initPaint() {
     const cvs = document.getElementById('paint-canvas'); const ctx = cvs.getContext('2d');
@@ -267,7 +265,7 @@
   }
 
   function saveDrawingAndNext() {
-    const cvs = document.getElementById('paint-canvas'); drawingData = cvs.toDataURL("image/png"); punkte += 10; currentTask = 7; subIndex = 0; renderCurrentTask();
+    const cvs = document.getElementById('paint-canvas'); drawingData = cvs.toDataURL("image/png"); punkte += 10; nextTask(7);
   }
 
   function finishGame() {
