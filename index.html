@@ -139,12 +139,12 @@
       initPaint();
     } else if(currentTask === 7) {
       const qA = [
-        {q:"Alter verraten?", i:BASE_URL+"jahr.jpg", o:["Nein!","Ja."], c:0},
-        {q:"Adresse senden?", i:BASE_URL+"adresse.jpg", o:["Ja.","Eltern fragen!"], c:1},
-        {q:"Etwas kaufen?", i:BASE_URL+"kaufen.jpg", o:["Nein!","Ja."], c:0},
-        {q:"Fotos schicken?", i:BASE_URL+"fotos.jpg", o:["Ja.","Niemals!"], c:1}
+        {q: "Jemand fragt dich im Internet: 'Wie alt bist du?'. Was machst du?", i: BASE_URL + "jahr.jpg", o: ["Ich sage mein Alter.", "Ich rufe meine Eltern und zeige es ihnen."], c: 1},
+        {q: "Jemand fragt nach deiner Adresse. Was machst du?", i: BASE_URL + "adresse.jpg", o: ["Ich schicke sie sofort.", "Ich frage, warum ele isso saber quer.", "Ich rufe meine Eltern und zeige es ihnen."], c: 2},
+        {q: "Du siehst Werbung in einer Spiele-App. Was machst du?", i: BASE_URL + "kaufen.jpg", o: ["Ich klicke drauf, um zu gucken.", "Ich bitte meine Eltern, die App zu löschen."], c: 1},
+        {q: "Jemand möchte, dass du Fotos oder Videos schickst. Was machst du?", i: BASE_URL + "fotos.jpg", o: ["Ich schicke die Fotos.", "Ich rufe meine Eltern und zeige es ihnen."], c: 1}
       ];
-      if(subIndex >= qA.length) { currentTask=8; renderCurrentTask(); return; }
+      if(subIndex >= qA.length) { currentTask=8; subIndex=0; renderCurrentTask(); return; }
       area.innerHTML = `<h3>Aufgabe 7</h3><img src="${qA[subIndex].i}" height="180"><p>${qA[subIndex].q}</p><div id="q-opts"></div>`;
       qA[subIndex].o.forEach((o, j) => {
         const btn = document.createElement('div'); btn.className = "sort-item"; btn.innerText = o;
@@ -152,11 +152,13 @@
         document.getElementById('q-opts').appendChild(btn);
       });
     } else if(currentTask === 8) {
-      area.innerHTML = `<h3>Aufgabe 8</h3><p>O que não pode fazer? (Anklicken)</p>
-        <div class="click-item" onclick="this.style.background='#f8d7da'">Am iPad essen</div>
-        <div class="click-item" onclick="this.style.background='#f8d7da'">iPad auf den Boden legen</div>
-        <div class="click-item" onclick="this.style.background='#f8d7da'">Ohne Hülle tragen</div>
-        <div class="click-item" onclick="this.style.background='#f8d7da'">Am Kabel ziehen</div>
+      area.innerHTML = `<h3>Aufgabe 8</h3><p>Was darfst du mit dem iPad <b>NICHT</b> machen? (Klicke an):</p>
+        <div class="click-item" onclick="this.style.background='#f8d7da'">Beim iPad-Spielen essen</div>
+        <div class="click-item" onclick="this.style.background='#f8d7da'">Laden erst bei unter 2% Akku</div>
+        <div class="click-item" onclick="this.style.background='#f8d7da'">Das iPad com apenas uma mão tragen</div>
+        <div class="click-item" onclick="this.style.background='white'">Das iPad sempre seguro auf den Tisch legen</div>
+        <div class="click-item" onclick="this.style.background='#f8d7da'">Das iPad auf den Boden legen</div>
+        <div class="click-item" onclick="this.style.background='#f8d7da'">Das iPad aus der Schutzhülle nehmen</div>
         <br><button class="btn-game" onclick="finishGame()">ENDE</button>`;
     }
     document.getElementById('score-label').innerText = punkte;
