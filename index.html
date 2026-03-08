@@ -125,9 +125,9 @@
         <div><button class="btn-game" onclick="addBotCmd('F')">⬆️</button><button class="btn-game" onclick="addBotCmd('B')">⬇️</button><button class="btn-game" onclick="addBotCmd('L')">↩️</button><button class="btn-game" onclick="addBotCmd('R')">↪️</button></div>
         <button id="btnA3" class="btn-game" style="background:var(--green)" onclick="runBotLogic()">GO!</button>`;
     } else if(currentTask === 4) {
-      area.innerHTML = `<h3>Aufgabe 4: Binär</h3><p>Schreibe deinen Namen:</p><input type="text" id="t-name" placeholder="Name..."><br><button class="btn-game" onclick="translateNow()">Verwandeln!</button>
+      area.innerHTML = `<h3>Aufgabe 4: Binär</h3><input type="text" id="t-name" placeholder="Name..."><button class="btn-game" onclick="translateNow()">Verwandeln!</button>
         <div id="b-res" class="hidden" style="background:#eee;padding:15px;margin:10px;word-break:break-all;font-family:monospace;border:2px dashed var(--blue);"></div>
-        <div id="count-area" class="hidden">0 zählen: <input type="number" id="cz" style="width:60px"> 1 zählen: <input type="number" id="co" style="width:60px"><br><button class="btn-game" onclick="punkte+=20; currentTask=5; renderCurrentTask();">WEITER</button></div>`;
+        <div id="count-area" class="hidden"><br>0: <input type="number" id="z" style="width:60px"> 1: <input type="number" id="o" style="width:60px"><br><button class="btn-game" onclick="punkte+=20; currentTask=5; renderCurrentTask();">PRÜFEN</button></div>`;
     } else if(currentTask === 5) {
       area.innerHTML = `<h3>Aufgabe 5: Pixel Art</h3><div id="pixel-canvas"></div><br><input type="text" id="px-guess" placeholder="Was?"><button class="btn-game" onclick="checkA5()">WEITER</button>`;
       loadPixels();
