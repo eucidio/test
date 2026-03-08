@@ -14,15 +14,19 @@
     .btn-game { background: var(--red); color: white; border: none; padding: 15px 25px; font-size: 1.2rem; border-radius: 30px; cursor: pointer; margin: 5px; font-weight: bold; box-shadow: 0px 4px 0px #A70000; }
     .btn-game:active { transform: translateY(2px); box-shadow: 0px 1px 0px #A70000; }
     .hidden { display: none !important; }
-    input[type="text"] { padding: 15px; border-radius: 15px; border: 3px solid var(--blue); font-size: 22px; text-align: center; width: 80%; max-width: 300px; background: #fff; margin: 10px 0; }
-    .sort-item, .click-item { background: white; border: 2px solid var(--blue); padding: 12px; margin: 8px auto; border-radius: 12px; font-weight: bold; width: 85%; cursor: pointer; transition: background 0.3s; }
+    input[type="text"], input[type="number"] { padding: 12px; border-radius: 10px; border: 2px solid var(--blue); font-size: 18px; text-align: center; }
+    .sort-item, .click-item { background: white; border: 2px solid var(--blue); padding: 12px; margin: 8px auto; border-radius: 12px; font-weight: bold; width: 85%; cursor: pointer; }
     .bluebot-grid { display: grid; grid-template-columns: repeat(5, 95px); grid-template-rows: repeat(5, 95px); gap: 3px; background: #bbb; margin: 10px auto; width: 487px; position: relative; border: 4px solid #333; }
     .grid-cell { background: white; width: 95px; height: 95px; border: 0.5px solid #eee; }
     #robot { position: absolute; width: 85px; height: 85px; transition: all 0.5s ease; z-index: 10; font-size: 65px; display: flex; align-items: center; justify-content: center; left: 5px; top: 385px; }
     .cmd-stack { background: #f9f9f9; border: 2px dashed var(--blue); padding: 10px; min-height: 55px; margin: 10px 0; border-radius: 10px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; font-size: 32px; }
     #paint-canvas { border: 3px solid var(--blue); background: white; touch-action: none; border-radius: 15px; display: block; margin: 0 auto; max-width: 100%; }
+    .palette { display: flex; justify-content: center; gap: 8px; margin: 10px; flex-wrap: wrap; }
+    .swatch { width: 35px; height: 35px; border-radius: 50%; border: 2px solid #333; cursor: pointer; }
+    .brush-btn { background: white; border: 2px solid var(--blue); padding: 5px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+    .brush-btn.active { background: var(--blue); color: white; }
     #pixel-canvas { display: grid; grid-template-columns: repeat(15, 45px); margin: 10px auto; width: 675px; border: 2px solid #333; touch-action: none; background: #fff; }
-    .pix { width: 45px; height: 45px; border: 0.5px solid #eee; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #ccc; }
+    .pix { width: 45px; height: 45px; border: 0.5px solid #eee; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #ccc; }
   </style>
 </head>
 <body>
@@ -40,10 +44,10 @@
       <video id="vid" width="280" playsinline></video><br>
       <button class="btn-game" onclick="playOnce()">▶️ Play</button>
       <h2>Willkommen!</h2>
-      <p>Überprüfe deinen Code:</p>
+      <p>Gib deinen Code ein:</p>
       <input type="text" id="student-code" placeholder="Code...">
       <br><br>
-      <button class="btn-game" style="background:var(--green); width: 250px; height: 70px; font-size: 1.5rem;" onclick="initGame()">SPIEL STARTEN</button>
+      <button class="btn-game" style="background:var(--green); width: 250px;" onclick="initGame()">SPIEL STARTEN</button>
     </div>
     <div id="screen-tasks" class="hidden">
       <div id="task-content"></div>
@@ -112,7 +116,7 @@
       });
     } else if(currentTask === 2) {
       const a2D = ["Essen aufräumen","Den Tisch abwischen","Hände waschen","Hände abtrocknen","iPad-Akku prüfen","iPad auf den Tisch legen"];
-      area.innerHTML = `<h3>Aufgabe 2</h3><p>Reihenfolge:</p><div id="sort-list">${a2D.map((t, i) => `<div class="sort-item" data-id="${i+1}">${t}</div>`).sort(()=>Math.random()-0.5).join('')}</div><button class="btn-game" style="background:var(--green)" onclick="checkA2()">PRÜFEN</button>`;
+      area.innerHTML = `<h3>Aufgabe 2</h3><div id="sort-list">${a2D.map((t, i) => `<div class="sort-item" data-id="${i+1}">${t}</div>`).sort(()=>Math.random()-0.5).join('')}</div><button class="btn-game" onclick="checkA2()">PRÜFEN</button>`;
       new Sortable(document.getElementById('sort-list'), { animation: 150 });
     } else if(currentTask === 3) {
       botCmds = []; botX = 0; botY = 4;
@@ -123,19 +127,22 @@
     } else if(currentTask === 4) {
       area.innerHTML = `<h3>Aufgabe 4: Binär</h3><p>Schreibe deinen Namen:</p><input type="text" id="t-name" placeholder="Name..."><br><button class="btn-game" onclick="translateNow()">Verwandeln!</button>
         <div id="b-res" class="hidden" style="background:#eee;padding:15px;margin:10px;word-break:break-all;font-family:monospace;border:2px dashed var(--blue);"></div>
-        <br><button class="btn-game" onclick="punkte+=20; currentTask=5; renderCurrentTask();">WEITER</button>`;
+        <div id="count-area" class="hidden">0 zählen: <input type="number" id="cz" style="width:60px"> 1 zählen: <input type="number" id="co" style="width:60px"><br><button class="btn-game" onclick="punkte+=20; currentTask=5; renderCurrentTask();">WEITER</button></div>`;
     } else if(currentTask === 5) {
       area.innerHTML = `<h3>Aufgabe 5: Pixel Art</h3><div id="pixel-canvas"></div><br><input type="text" id="px-guess" placeholder="Was?"><button class="btn-game" onclick="checkA5()">WEITER</button>`;
       loadPixels();
     } else if(currentTask === 6) {
-      area.innerHTML = `<h3>Aufgabe 6: Malen</h3><canvas id="paint-canvas" width="600" height="400"></canvas><br><button class="btn-game" onclick="punkte+=10; currentTask=7; subIndex=0; renderCurrentTask()">FERTIG</button>`;
+      area.innerHTML = `<h3>Aufgabe 6: Malen</h3>
+        <div class="palette">${['#000','#F00','#0F0','#00F','#FF0','#FFF'].map(c=>`<div class="swatch" style="background:${c}" onclick="currentColor='${c}'"></div>`).join('')}</div>
+        <div class="palette"><button class="brush-btn" onclick="currentBrushSize=3">Fein</button><button class="brush-btn active" onclick="currentBrushSize=8">Mittel</button><button class="brush-btn" onclick="currentBrushSize=15">Groß</button><button class="brush-btn" onclick="currentColor='#FFFFFF'">🧽</button></div>
+        <canvas id="paint-canvas" width="600" height="400"></canvas><br><button class="btn-game" onclick="punkte+=10; currentTask=7; subIndex=0; renderCurrentTask()">FERTIG</button>`;
       initPaint();
     } else if(currentTask === 7) {
       const qA = [
-        {q:"Alter?", i:BASE_URL+"jahr.jpg", o:["Nein!","Ja."], c:0},
-        {q:"Adresse?", i:BASE_URL+"adresse.jpg", o:["Ja.","Eltern fragen!"], c:1},
-        {q:"Kaufen?", i:BASE_URL+"kaufen.jpg", o:["Nein!","Ja."], c:0},
-        {q:"Fotos?", i:BASE_URL+"fotos.jpg", o:["Ja.","Niemals!"], c:1}
+        {q:"Alter verraten?", i:BASE_URL+"jahr.jpg", o:["Nein!","Ja."], c:0},
+        {q:"Adresse senden?", i:BASE_URL+"adresse.jpg", o:["Ja.","Eltern fragen!"], c:1},
+        {q:"Etwas kaufen?", i:BASE_URL+"kaufen.jpg", o:["Nein!","Ja."], c:0},
+        {q:"Fotos schicken?", i:BASE_URL+"fotos.jpg", o:["Ja.","Niemals!"], c:1}
       ];
       if(subIndex >= qA.length) { currentTask=8; renderCurrentTask(); return; }
       area.innerHTML = `<h3>Aufgabe 7</h3><img src="${qA[subIndex].i}" height="180"><p>${qA[subIndex].q}</p><div id="q-opts"></div>`;
@@ -145,38 +152,25 @@
         document.getElementById('q-opts').appendChild(btn);
       });
     } else if(currentTask === 8) {
-      area.innerHTML = `<h3>Aufgabe 8</h3><p>Was darf man com o iPad <b>NICHT</b> tun?</p>
-        <div class="click-item" data-bad="true" onclick="this.style.background='#f8d7da'">Am iPad essen</div>
-        <div class="click-item" data-bad="true" onclick="this.style.background='#f8d7da'">iPad auf den Boden legen</div>
-        <div class="click-item" data-bad="true" onclick="this.style.background='#f8d7da'">Ohne Hülle tragen</div>
-        <div class="click-item" data-bad="true" onclick="this.style.background='#f8d7da'">Am Kabel ziehen</div>
-        <br><button class="btn-game" style="background:var(--green)" onclick="finishGame()">ENDE</button>`;
+      area.innerHTML = `<h3>Aufgabe 8</h3><p>O que não pode fazer? (Anklicken)</p>
+        <div class="click-item" onclick="this.style.background='#f8d7da'">Am iPad essen</div>
+        <div class="click-item" onclick="this.style.background='#f8d7da'">iPad auf den Boden legen</div>
+        <div class="click-item" onclick="this.style.background='#f8d7da'">Ohne Hülle tragen</div>
+        <div class="click-item" onclick="this.style.background='#f8d7da'">Am Kabel ziehen</div>
+        <br><button class="btn-game" onclick="finishGame()">ENDE</button>`;
     }
     document.getElementById('score-label').innerText = punkte;
   }
 
   function checkA2() {
     const items = document.querySelectorAll('.sort-item');
-    let correctCount = 0;
-    items.forEach((item, index) => {
-      const currentId = parseInt(item.getAttribute('data-id'));
-      if (currentId === (index + 1)) {
-        item.style.backgroundColor = "#d4edda";
-        correctCount++;
-      } else {
-        item.style.backgroundColor = "#f8d7da";
-      }
+    let correct = 0;
+    items.forEach((it, idx) => {
+      if(parseInt(it.getAttribute('data-id')) === (idx+1)) { it.style.background="#d4edda"; correct++; }
+      else it.style.background="#f8d7da";
     });
-    if (correctCount === items.length) {
-      punkte += 20;
-      setTimeout(() => { currentTask = 3; versuche = 0; renderCurrentTask(); }, 1500);
-    } else {
-      versuche++;
-      if (versuche >= 2) {
-        alert("Weiter!");
-        setTimeout(() => { currentTask = 3; versuche = 0; renderCurrentTask(); }, 1500);
-      } else { alert("Noch einmal."); }
-    }
+    if(correct === items.length) { punkte+=20; setTimeout(() => { currentTask=3; versuche=0; renderCurrentTask(); }, 1500); }
+    else { versuche++; if(versuche >= 2) setTimeout(() => { currentTask=3; versuche=0; renderCurrentTask(); }, 1500); else alert("Falsch!"); }
   }
 
   function addBotCmd(type) { botCmds.push(type); document.getElementById('stack').innerHTML += (type==='F'?'⬆️':type==='B'?'⬇️':type==='L'?'↩️':'↪️') + " "; }
@@ -197,11 +191,11 @@
 
   function translateNow() {
     let v = document.getElementById('t-name').value;
-    if(!v) return alert("Gib deinen Namen ein!");
+    if(!v) return;
     let binary = v.split('').map(c => c.charCodeAt(0).toString(2).padStart(8,'0')).join(' ');
-    let resDiv = document.getElementById('b-res');
-    resDiv.innerText = binary;
-    resDiv.classList.remove('hidden');
+    document.getElementById('b-res').innerText = binary;
+    document.getElementById('b-res').classList.remove('hidden');
+    document.getElementById('count-area').classList.remove('hidden');
   }
 
   function loadPixels() {
@@ -239,7 +233,7 @@
     cvs.onmouseup = cvs.ontouchend = () => { d = false; ctx.beginPath(); };
     cvs.onmousemove = cvs.ontouchmove = (e) => {
       if(!d) return; e.preventDefault();
-      ctx.lineWidth = 8; ctx.lineCap='round'; ctx.strokeStyle = "#000";
+      ctx.lineWidth = currentBrushSize; ctx.lineCap='round'; ctx.strokeStyle = currentColor;
       const [x,y] = getXY(e); ctx.lineTo(x,y); ctx.stroke();
     };
   }
@@ -247,7 +241,7 @@
   function finishGame() {
     document.getElementById('avatar-img').classList.add('hidden');
     document.getElementById('header').classList.add('hidden');
-    document.getElementById('game-area').innerHTML = `<img src="${BASE_URL}menino.png" width="300"><div class="finish-text" style="font-size:70px; font-weight:bold; color:var(--purple); margin:20px 0;">Fertig!</div><p>Punkte: ${punkte}</p>`;
+    document.getElementById('game-area').innerHTML = `<img src="${BASE_URL}menino.png" width="300"><div style="font-size:70px; font-weight:bold; color:var(--purple); margin:20px 0;">Fertig!</div><p>Punkte: ${punkte}</p>`;
     fetch(scriptURL, { method: "POST", mode: "no-cors", body: JSON.stringify({ id: studentID, score: punkte, antwortA5: savedAntwortA5 }) });
   }
 </script>
