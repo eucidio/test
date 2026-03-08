@@ -71,10 +71,10 @@
   };
 
   const a1Data = [
-    { n: 'Bluetooth', i: BASE_URL+'bluetooth.png', s: BASE_URL+'bluetooth.mp3', o: ['Bluetooth', 'Bluetooh', 'Bluetot'] },
+    { n: 'Bluetooth', i: BASE_URL+'bluetooth.jpg', s: BASE_URL+'bluetooth.mp3', o: ['Bluetooth', 'Bluetooh', 'Bluetot'] },
     { n: 'Airdrop', i: BASE_URL+'airdrop.png', s: BASE_URL+'airdrop.mp3', o: ['Airdrop', 'Aidrop', 'Airdropo'] },
     { n: 'Browser', i: BASE_URL+'browser.png', s: BASE_URL+'browser.mp3', o: ['Browser', 'Browsher', 'Brouser'] },
-    { n: 'Suchmaschine', i: BASE_URL+'suchmachine.png', s: BASE_URL+'suchmachine.mp3', o: ['Suchmaschine', 'Suchmaschina', 'Suchmaschin'] }
+    { n: 'Suchmaschine', i: BASE_URL+'suchemaschine.jpg', s: BASE_URL+'suchmachine.mp3', o: ['Suchmaschine', 'Suchmaschina', 'Suchmaschin'] }
   ];
 
   function playOnce() { 
@@ -139,10 +139,10 @@
       initPaint();
     } else if(currentTask === 7) {
       const qA = [
-        {q: "Jemand fragt dich im Internet: 'Wie alt bist du?'. Was machst du?", i: BASE_URL + "jahr.jpg", o: ["Ich sage mein Alter.", "Ich rufe meine Eltern und zeige es ihnen."], c: 1},
-        {q: "Jemand fragt nach deiner Adresse. Was machst du?", i: BASE_URL + "adresse.jpg", o: ["Ich schicke sie sofort.", "Ich frage, warum ele isso saber quer.", "Ich rufe meine Eltern und zeige es ihnen."], c: 2},
-        {q: "Du siehst Werbung in einer Spiele-App. Was machst du?", i: BASE_URL + "kaufen.jpg", o: ["Ich klicke drauf, um zu gucken.", "Ich bitte meine Eltern, die App zu löschen."], c: 1},
-        {q: "Jemand möchte, dass du Fotos oder Videos schickst. Was machst du?", i: BASE_URL + "fotos.jpg", o: ["Ich schicke die Fotos.", "Ich rufe meine Eltern und zeige es ihnen."], c: 1}
+        {q: "Jemand fragt dich im Internet: 'Wie alt bist du?'. Was machst du?", i: BASE_URL + "jahr.png", o: ["Ich sage mein Alter.", "Ich rufe meine Eltern und zeige es ihnen."], c: 1},
+        {q: "Jemand fragt nach deiner Adresse. Was machst du?", i: BASE_URL + "adresse.png", o: ["Ich schicke sie sofort.", "Ich frage, warum ele isso saber quer.", "Ich rufe meine Eltern und zeige es ihnen."], c: 2},
+        {q: "Du siehst Werbung in einer Spiele-App. Was machst du?", i: BASE_URL + "kaufen.png", o: ["Ich klicke drauf, um zu gucken.", "Ich bitte meine Eltern, die App zu löschen."], c: 1},
+        {q: "Jemand möchte, dass du Fotos oder Videos schickst. Was machst du?", i: BASE_URL + "fotos.png", o: ["Ich schicke die Fotos.", "Ich rufe meine Eltern und zeige es ihnen."], c: 1}
       ];
       if(subIndex >= qA.length) { currentTask=8; subIndex=0; renderCurrentTask(); return; }
       area.innerHTML = `<h3>Aufgabe 7</h3><img src="${qA[subIndex].i}" height="180"><p>${qA[subIndex].q}</p><div id="q-opts"></div>`;
