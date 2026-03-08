@@ -1,0 +1,108 @@
+<script>
+  // CONFIGURAÇÃO FLEXÍVEL
+  let name = "";
+  let punkte = 0;
+  let tempo = 40 * 60;
+  let subIndex = 0; 
+  let fehlerA1 = 0;
+  let versuche = 0;
+
+  // Se você adicionar mais itens aqui, o sistema aceita sozinho!
+  const aufgabe1Daten = [
+    { n: 'Bluetooth', i: 'bluetooth.jpg', s: 'bluetooth.mp3', o: ['Bluetooth', 'Bluetooh', 'Bluetot'] },
+    { n: 'Airdrop', i: 'airdrop.png', s: 'airdrop.mp3', o: ['Airdrop', 'Aidrop', 'Airdropo'] },
+    { n: 'Browser', i: 'browser.png', s: 'browser.mp3', o: ['Browser', 'Browsher', 'Brouser'] },
+    { n: 'Suchmaschine', i: 'suchmachine.jpg', s: 'suchmachine.mp3', o: ['Suchmaschine', 'Suchmaschina', 'Suchmaschin'] }
+  ];
+
+  // --- CONTROLE DE FLUXO FLEXÍVEL ---
+  
+  function renderA1() {
+    // 1. VERIFICAÇÃO AUTOMÁTICA: Se o índice chegou ao fim da lista (não importa o tamanho)
+    if (subIndex >= aufgabe1Daten.length) {
+       console.log("Lista A1 terminada. Avançando...");
+       finishA1(); 
+       return; // Para a execução aqui e não tenta ler o que não existe
+    }
+    
+    // 2. Se ainda há itens, carrega o próximo
+    let item = aufgabe1Daten[subIndex];
+    
+    // Garante que a tela A1 está visível
+    document.getElementById('a1-screen').classList.remove('hidden');
+    document.getElementById('img-target').src = item.i;
+    
+    const container = document.getElementById('options-container');
+    container.innerHTML = "";
+    
+    // Cria os botões dinamicamente
+    item.o.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = "btn-game";
+      btn.innerText = opt;
+      btn.onclick = () => checkAnswer(opt, item.n);
+      container.appendChild(btn);
+    });
+    
+    updateUI();
+  }
+
+  function checkAnswer(wahl, korrekt) {
+    let fb = document.getElementById('feedback');
+    if(wahl === korrekt) {
+      punkte += (versuche === 0) ? 10 : 5;
+      fb.innerText = "✅ Richtig!";
+      fb.style.color = "green";
+      setTimeout(nextItem, 800);
+    } else {
+      versuche++;
+      if(versuche >= 2) {
+        fehlerA1++;
+        fb.innerText = "❌ Falsch!";
+        fb.style.color = "red";
+        setTimeout(nextItem, 1200);
+      } else {
+        fb.innerText = "🟠 Versuche es noch einmal!";
+        fb.style.color = "orange";
+      }
+    }
+  }
+
+  function nextItem() {
+    versuche = 0;
+    subIndex++; // Aumenta o contador
+    document.getElementById('feedback').innerText = "";
+    renderA1(); // Chama a função novamente para verificar se há próximo ou se encerra
+  }
+
+  function finishA1() {
+    // Esconde a área da tarefa 1
+    document.getElementById('a1-screen').classList.add('hidden');
+    
+    // Feedback visual de transição
+    const area = document.querySelector('.content-area');
+    area.innerHTML = `<h2>Gut gemacht! Aufgabe 1 ist fertig. 🎉</h2><p>Lade Aufgabe 2...</p>`;
+    
+    // Salva na planilha
+    saveToSheet(15);
+    
+    // Aguarda 2 segundos e abre a próxima tarefa
+    setTimeout(renderA2, 2000);
+  }
+
+  // --- INTERFACE ---
+
+  function updateUI() {
+    document.getElementById('score-label').innerText = punkte;
+    
+    // Cálculo de porcentagem flexível: (item atual / total da lista)
+    // Multiplicamos por 0.2 para que a Aufgabe 1 represente os primeiros 20% do jogo total
+    let progressoA1 = Math.round((subIndex / aufgabe1Daten.length) * 20);
+    
+    document.getElementById('bar-fill').style.width = progressoA1 + "%";
+    document.getElementById('perc-label').innerText = progressoA1 + "%";
+  }
+
+  // As funções renderA2, renderA3 etc devem seguir o mesmo padrão: 
+  // Limpar a content-area e desenhar o novo conteúdo.
+</script>
