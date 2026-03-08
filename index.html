@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
@@ -14,17 +14,22 @@
     .btn-game { background: var(--red); color: white; border: none; padding: 15px 25px; font-size: 1.2rem; border-radius: 30px; cursor: pointer; margin: 5px; font-weight: bold; box-shadow: 0px 4px 0px #A70000; }
     .btn-game:active { transform: translateY(2px); box-shadow: 0px 1px 0px #A70000; }
     .hidden { display: none !important; }
-    input[type="text"], input[type="number"] { padding: 12px; border-radius: 10px; border: 2px solid var(--blue); font-size: 18px; text-align: center; width: 200px; }
+    input[type="text"] { padding: 15px; border-radius: 15px; border: 3px solid var(--blue); font-size: 22px; text-align: center; width: 80%; max-width: 300px; background: #fff; margin: 10px 0; }
     .sort-item, .click-item { background: white; border: 2px solid var(--blue); padding: 12px; margin: 8px auto; border-radius: 12px; font-weight: bold; width: 85%; cursor: pointer; }
     .correct-bg { background-color: #d4edda !important; border-color: #28a745 !important; }
     .error-bg { background-color: #f8d7da !important; border-color: #dc3545 !important; }
     .bluebot-grid { display: grid; grid-template-columns: repeat(5, 95px); grid-template-rows: repeat(5, 95px); gap: 3px; background: #bbb; margin: 10px auto; width: 487px; position: relative; border: 4px solid #333; }
-    .grid-cell { background: white; width: 95px; height: 95px; }
+    .grid-cell { background: white; width: 95px; height: 95px; border: 0.5px solid #eee; }
     #robot { position: absolute; width: 85px; height: 85px; transition: all 0.5s ease; z-index: 10; font-size: 65px; display: flex; align-items: center; justify-content: center; left: 5px; top: 385px; }
     .cmd-stack { background: #f9f9f9; border: 2px dashed var(--blue); padding: 10px; min-height: 55px; margin: 10px 0; border-radius: 10px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; font-size: 32px; }
     #paint-canvas { border: 3px solid var(--blue); background: white; touch-action: none; border-radius: 15px; display: block; margin: 0 auto; max-width: 100%; }
+    .palette { display: flex; justify-content: center; gap: 8px; margin: 10px; flex-wrap: wrap; }
+    .swatch { width: 40px; height: 40px; border-radius: 50%; border: 3px solid #333; cursor: pointer; }
+    .brush-btn { background: white; border: 2px solid var(--blue); padding: 8px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+    .brush-btn.active { background: var(--blue); color: white; }
     #pixel-canvas { display: grid; grid-template-columns: repeat(15, 45px); margin: 10px auto; width: 675px; border: 2px solid #333; touch-action: none; background: #fff; }
-    .pix { width: 45px; height: 45px; border: 0.5px solid #eee; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #ccc; }
+    .pix { width: 45px; height: 45px; border: 0.5px solid #eee; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #ccc; }
+    .finish-text { font-size: 70px; font-weight: bold; color: var(--purple); margin: 20px 0; }
   </style>
 </head>
 <body>
@@ -37,16 +42,15 @@
 
 <div class="container">
   <img src="" id="avatar-img" class="avatar-top hidden">
-  
   <div id="game-area">
     <div id="screen-intro">
       <video id="vid" width="280" playsinline></video><br>
-      <button class="btn-game" onclick="playOnce()">▶️ Play Video</button>
+      <button class="btn-game" onclick="playOnce()">▶️ Play</button>
       <h2>Willkommen!</h2>
-      <p>Gib deinen Code ein:</p>
-      <input type="text" id="student-code" placeholder="Code...">
+      <p>Überprüfe deinen Code:</p>
+      <input type="text" id="student-code" placeholder="Code hier...">
       <br><br>
-      <button class="btn-game" style="background:var(--green);" onclick="initGame()">SPIEL STARTEN</button>
+      <button class="btn-game" style="background:var(--green); width: 250px; height: 70px; font-size: 1.5rem;" onclick="initGame()">SPIEL STARTEN</button>
     </div>
 
     <div id="screen-tasks" class="hidden">
@@ -58,7 +62,7 @@
 
 <script>
   // ==========================================
-  // CONFIGURAÇÃO DOS LINKS
+  // CONFIGURATION
   // ==========================================
   const BASE_URL = "https://eucidio.github.io/test/"; 
   const scriptURL = "https://script.google.com/macros/s/AKfycbzbds4zjk6QHPEjkyjVJ_zmXBF1MRgcJOjlX45SfIZlTnvTiw3iSYxGeGUZU6mCd0OIRA/exec"; 
@@ -68,7 +72,15 @@
   let pixelsPainted = 0, currentColor = "#000000", currentBrushSize = 8;
   let savedAntwortA5 = "";
 
-  // Dados da Tarefa 1
+  // FUNÇÃO DE LEITURA AUTOMÁTICA DO QR CODE
+  window.onload = function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const idDoQR = urlParams.get('id');
+    if (idDoQR) {
+      document.getElementById('student-code').value = idDoQR.toUpperCase();
+    }
+  };
+
   const a1Data = [
     { n: 'Bluetooth', i: BASE_URL+'bluetooth.jpg', s: BASE_URL+'bluetooth.mp3', o: ['Bluetooth', 'Bluetooh', 'Bluetot'] },
     { n: 'Airdrop', i: BASE_URL+'airdrop.png', s: BASE_URL+'airdrop.mp3', o: ['Airdrop', 'Aidrop', 'Airdropo'] },
@@ -76,50 +88,38 @@
     { n: 'Suchmaschine', i: BASE_URL+'suchmachine.jpg', s: BASE_URL+'suchmachine.mp3', o: ['Suchmaschine', 'Suchmaschina', 'Suchmaschin'] }
   ];
 
-  // Função para dar play no vídeo
   function playOnce() { 
     let v = document.getElementById('vid'); 
     v.src = BASE_URL + "menina_video.mp4";
-    v.play().catch(e => console.log("Video wait click")); 
+    v.play(); 
   }
 
-  // FUNÇÃO QUE FAZ PASSAR DA PRIMEIRA PÁGINA
   function initGame() {
     studentID = document.getElementById('student-code').value;
-    if(!studentID) { alert("Bitte Code eingeben!"); return; }
-    
-    // Esconde tela inicial e mostra as tarefas
+    if(!studentID) return alert("Gib deinen Code ein!");
     document.getElementById('screen-intro').classList.add('hidden');
-    
-    // Configura o avatar
     let av = document.getElementById('avatar-img');
     av.src = BASE_URL + "menina.png";
     av.classList.remove('hidden');
-    
     document.getElementById('screen-tasks').classList.remove('hidden');
-    
-    // Inicia a primeira tarefa
     renderCurrentTask();
-    
-    // Inicia cronômetro
-    setInterval(() => { 
-      if(tempo > 0){ 
-        tempo--; 
-        let m = Math.floor(tempo/60), s = tempo%60; 
-        document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`; 
-      } 
-    }, 1000);
+    setInterval(() => { if(tempo>0){ tempo--; updateTimer(); } }, 1000);
+  }
+
+  function updateTimer() { 
+    let m = Math.floor(tempo/60), s = tempo%60; 
+    document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`; 
   }
 
   function renderCurrentTask() {
-    const area = document.getElementById('task-content');
     document.getElementById('task-num').innerText = currentTask;
+    const area = document.getElementById('task-content');
     area.innerHTML = ""; 
 
     if(currentTask === 1) {
       if(subIndex >= a1Data.length) { currentTask = 2; subIndex = 0; renderCurrentTask(); return; }
       let it = a1Data[subIndex];
-      area.innerHTML = `<h3>Aufgabe 1</h3><img src="${it.i}" height="150"><br><button class="btn-game" onclick="new Audio('${it.s}').play()">🔈 HÖREN</button><div id="opts"></div>`;
+      area.innerHTML = `<h3>Aufgabe 1</h3><img src="${it.i}" height="180"><br><button class="btn-game" onclick="new Audio('${it.s}').play()">🔈 HÖREN</button><div id="opts" style="margin-top:15px;"></div>`;
       it.o.forEach(opt => {
         const btn = document.createElement('button'); btn.className = "btn-game"; btn.innerText = opt;
         btn.onclick = () => { if(opt === it.n){ punkte+=10; subIndex++; renderCurrentTask(); } else alert("Falsch!"); };
@@ -127,44 +127,54 @@
       });
     } else if(currentTask === 2) {
       const a2D = ["Essen aufräumen","Den Tisch abwischen","Hände waschen","Hände abtrocknen","iPad-Akku prüfen","iPad auf den Tisch legen"];
-      area.innerHTML = `<h3>Aufgabe 2</h3><div id="sort-list">${a2D.map((t, i) => `<div class="sort-item" data-id="${i+1}">${t}</div>`).sort(()=>Math.random()-0.5).join('')}</div><button class="btn-game" onclick="checkA2()">PRÜFEN</button>`;
+      area.innerHTML = `<h3>Aufgabe 2</h3><p>Bringe die Schritte in die richtige Reihenfolge:</p><div id="sort-list">${a2D.map((t, i) => `<div class="sort-item" data-id="${i+1}">${t}</div>`).sort(()=>Math.random()-0.5).join('')}</div><button class="btn-game" style="background:var(--green)" onclick="checkA2()">PRÜFEN</button>`;
       new Sortable(document.getElementById('sort-list'), { animation: 150 });
     } else if(currentTask === 3) {
       botCmds = []; botX = 0; botY = 4;
-      area.innerHTML = `<h3>Aufgabe 3: Bluebot</h3><div class="bluebot-grid"><div style="position:absolute;top:10px;right:10px;font-size:50px;">🏫</div><div id="robot">🤖</div>${Array(25).fill('<div class="grid-cell"></div>').join('')}</div>
+      area.innerHTML = `<h3>Aufgabe 3: Bluebot</h3><p>Fahre zur Schule (🏫)!</p><div class="bluebot-grid"><div style="position:absolute;top:15px;right:15px;font-size:50px;z-index:1;">🏫</div><div id="robot">🤖</div>${Array(25).fill('<div class="grid-cell"></div>').join('')}</div>
         <div class="cmd-stack" id="stack"> </div>
         <div><button class="btn-game" onclick="addBotCmd('F')">⬆️</button><button class="btn-game" onclick="addBotCmd('B')">⬇️</button><button class="btn-game" onclick="addBotCmd('L')">↩️</button><button class="btn-game" onclick="addBotCmd('R')">↪️</button></div>
-        <button id="btnA3" class="btn-game" style="background:var(--green)" onclick="runBotLogic()">GO!</button>`;
+        <button id="btnA3" class="btn-game" style="background:var(--green)" onclick="runBotLogic()">GO!</button> <button class="btn-game" onclick="renderCurrentTask()">Reset</button>`;
     } else if(currentTask === 4) {
-      area.innerHTML = `<h3>Aufgabe 4: Binär</h3><input type="text" id="t-name" placeholder="Name..."><button class="btn-game" onclick="translateNow()">Verwandeln!</button>
+      area.innerHTML = `<h3>Aufgabe 4: Binär</h3><p>Schreibe deinen Namen und schau dir den Code an:</p><input type="text" id="t-name" placeholder="Name..."><br><button class="btn-game" onclick="translateNow()">Verwandeln!</button>
         <div id="b-res" class="hidden" style="background:#eee;padding:15px;margin:10px;word-break:break-all;font-family:monospace;border:2px dashed var(--blue);"></div>
         <div id="count-area" class="hidden"><br><button class="btn-game" onclick="punkte+=20; currentTask=5; renderCurrentTask();">WEITER</button></div>`;
     } else if(currentTask === 5) {
-      area.innerHTML = `<h3>Aufgabe 5: Pixel Art</h3><div id="pixel-canvas"></div><br><input type="text" id="px-guess" placeholder="Was siehst du?"><button class="btn-game" onclick="checkA5()">WEITER</button>`;
+      area.innerHTML = `<h3>Aufgabe 5: Pixel Art</h3><p>Male das Bild aus. Was siehst du?</p><div id="pixel-canvas"></div><br><input type="text" id="px-guess" placeholder="Was ist das?"><button class="btn-game" onclick="checkA5()">WEITER</button>`;
       loadPixels();
     } else if(currentTask === 6) {
-      area.innerHTML = `<h3>Aufgabe 6: Malen</h3><canvas id="paint-canvas" width="600" height="400"></canvas><br><button class="btn-game" onclick="punkte+=10; currentTask=7; subIndex=0; renderCurrentTask()">FERTIG</button>`;
+      area.innerHTML = `<h3>Aufgabe 6: Malen</h3><p>Male ein Bild:</p>
+        <div class="palette">${['#000','#F00','#0F0','#00F','#FF0','#FFF'].map(c=>`<div class="swatch" style="background:${c}" onclick="currentColor='${c}'"></div>`).join('')}</div>
+        <div class="palette"><button class="brush-btn" onclick="currentBrushSize=3">Fein</button><button class="brush-btn active" onclick="currentBrushSize=8">Mittel</button><button class="brush-btn" onclick="currentBrushSize=15">Groß</button><button class="brush-btn" onclick="currentColor='#FFFFFF'">🧽 Radierer</button></div>
+        <canvas id="paint-canvas" width="600" height="400"></canvas><br><button class="btn-game" onclick="punkte+=10; currentTask=7; subIndex=0; renderCurrentTask()">FERTIG</button>`;
       initPaint();
     } else if(currentTask === 7) {
-      const qA = [{q:"Alter?", i:BASE_URL+"Jahr.jpg", o:["Nein.","Ja."], c:0}, {q:"Adresse?", i:BASE_URL+"Adresse.jpg", o:["Senden.","Eltern rufen."], c:1}];
+      const qA = [
+        {q:"Darfst du dein Alter verraten?", i:BASE_URL+"Jahr.jpg", o:["Nein!","Ja."], c:0},
+        {q:"Darfst du deine Adresse senden?", i:BASE_URL+"Adresse.jpg", o:["Ja.","Eltern fragen!"], c:1},
+        {q:"Darfst du einfach etwas kaufen?", i:BASE_URL+"Kaufen.jpg", o:["Nein!","Ja."], c:0},
+        {q:"Darfst du Fotos schicken?", i:BASE_URL+"Fotos.jpg", o:["Ja.","Niemals allein!"], c:1}
+      ];
       if(subIndex >= qA.length) { currentTask=8; renderCurrentTask(); return; }
-      area.innerHTML = `<h3>Aufgabe 7</h3><img src="${qA[subIndex].i}" height="150"><p>${qA[subIndex].q}</p><div id="q-opts"></div>`;
+      area.innerHTML = `<h3>Aufgabe 7: Sicherheit</h3><img src="${qA[subIndex].i}" height="180"><p style="font-size:1.3rem;">${qA[subIndex].q}</p><div id="q-opts"></div>`;
       qA[subIndex].o.forEach((o, j) => {
         const btn = document.createElement('div'); btn.className = "sort-item"; btn.innerText = o;
         btn.onclick = () => { if(j === qA[subIndex].c) punkte+=10; subIndex++; renderCurrentTask(); };
         document.getElementById('q-opts').appendChild(btn);
       });
     } else if(currentTask === 8) {
-      area.innerHTML = `<h3>Aufgabe 8</h3><div class="click-item" data-bad="true">Essen am iPad</div><button class="btn-game" onclick="finishGame()">FERTIG</button>`;
+      area.innerHTML = `<h3>Aufgabe 8</h3><p>Was darf man mit dem iPad <b>NICHT</b> tun? (Anklicken)</p>
+        <div class="click-item" data-bad="true">Am iPad essen</div>
+        <div class="click-item" data-bad="true">iPad auf den Boden legen</div>
+        <button class="btn-game" style="background:var(--green); margin-top:20px;" onclick="checkA8()">SPIEL BEENDEN</button>`;
+      document.querySelectorAll('.click-item').forEach(el => el.onclick = () => el.classList.toggle('error-bg'));
     }
     document.getElementById('score-label').innerText = punkte;
   }
 
-  // --- FUNÇÕES DE LÓGICA ---
   function checkA2() {
     const list = [...document.querySelectorAll('.sort-item')];
-    const isCorrect = list.every((el, i) => el.dataset.id == (i+1));
-    if(isCorrect) { punkte += 20; currentTask = 3; renderCurrentTask(); } else alert("Falsche Reihenfolge!");
+    if(list.every((el, i) => el.dataset.id == (i+1))) { punkte += 20; currentTask = 3; renderCurrentTask(); } else alert("Versuche es nochmal!");
   }
 
   function addBotCmd(type) { botCmds.push(type); document.getElementById('stack').innerHTML += (type==='F'?'⬆️':type==='B'?'⬇️':type==='L'?'↩️':'↪️') + " "; }
@@ -178,7 +188,7 @@
         else { let m = (cmd==='F'?-1:1); if(cD===0)cY+=m; else if(cD===1)cX-=m; else if(cD===2)cY-=m; else if(cD===3)cX+=m; }
         r.style.transform = `rotate(${cD*90}deg)`; r.style.left = (Math.max(0,Math.min(4,cX))*95+5)+"px"; r.style.top = (Math.max(0,Math.min(4,cY))*95+5)+"px";
         i++; setTimeout(step, 600);
-      } else { if(cX===4 && cY===0) { punkte+=20; currentTask=4; renderCurrentTask(); } else alert("Ziel nicht erreicht!"); }
+      } else { if(cX===4 && cY===0) { punkte+=20; currentTask=4; renderCurrentTask(); } else alert("Du bist noch nicht an der Schule!"); }
     }
     step();
   }
@@ -193,17 +203,17 @@
     const c = document.getElementById('pixel-canvas');
     for(let i=0; i<15*13; i++){
       let p = document.createElement('div'); p.className='pix'; p.dataset.p="f"; p.innerText=Math.floor(Math.random()*9)+1;
-      p.onmouseover = p.ontouchmove = (e) => {
-        let t = e.touches ? e.touches[0] : e;
-        let target = document.elementFromPoint(t.clientX, t.clientY);
-        if(target && target.className==='pix' && target.dataset.p==="f"){
-          target.dataset.p="t"; pixelsPainted++;
-          target.style.background=`url('${BASE_URL}fruhling.png')`; target.style.backgroundSize="675px 585px";
-          let idx = Array.from(c.children).indexOf(target);
-          target.style.backgroundPosition = `-${(idx%15)*45}px -${Math.floor(idx/15)*45}px`;
-          target.innerText=""; target.style.border="none";
+      const paint = (el) => {
+        if(el && el.className==='pix' && el.dataset.p==="f"){
+          el.dataset.p="t"; pixelsPainted++;
+          el.style.backgroundImage=`url('${BASE_URL}fruhling.png')`; el.style.backgroundSize="675px 585px";
+          let idx = Array.from(c.children).indexOf(el);
+          el.style.backgroundPosition = `-${(idx%15)*45}px -${Math.floor(idx/15)*45}px`;
+          el.innerText=""; el.style.border="none";
         }
       };
+      p.onmouseover = () => paint(p);
+      p.ontouchmove = (e) => { e.preventDefault(); paint(document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY)); };
       c.appendChild(p);
     }
   }
@@ -213,28 +223,34 @@
   function initPaint() {
     const cvs = document.getElementById('paint-canvas'); const ctx = cvs.getContext('2d');
     let d = false;
-    cvs.onmousedown = cvs.ontouchstart = () => d = true;
-    cvs.onmouseup = cvs.ontouchend = () => { d = false; ctx.beginPath(); };
-    cvs.onmousemove = cvs.ontouchmove = (e) => {
-      if(!d) return; ctx.lineWidth = 8; ctx.lineCap='round'; ctx.strokeStyle = "#000";
+    const getXY = (e) => {
       const r = cvs.getBoundingClientRect();
       const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
       const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
-      ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y);
+      return [x, y];
+    };
+    cvs.onmousedown = cvs.ontouchstart = (e) => { d = true; ctx.beginPath(); const [x,y] = getXY(e); ctx.moveTo(x,y); };
+    cvs.onmouseup = cvs.ontouchend = () => d = false;
+    cvs.onmousemove = cvs.ontouchmove = (e) => {
+      if(!d) return; e.preventDefault();
+      ctx.lineWidth = currentBrushSize; ctx.lineCap='round'; ctx.strokeStyle = currentColor;
+      const [x,y] = getXY(e); ctx.lineTo(x,y); ctx.stroke();
     };
   }
 
+  function checkA8() { punkte+=10; finishGame(); }
+
   function finishGame() {
-    punkte += 10;
     document.getElementById('avatar-img').classList.add('hidden');
     document.getElementById('header').classList.add('hidden');
     document.getElementById('game-area').innerHTML = `
-      <img src="${BASE_URL}menino.png" width="350">
-      <div style="font-size:60px; font-weight:bold; color:var(--purple);">Fertig!</div>
-      <p style="font-size:2rem;">Punkte: ${punkte}</p>`;
+      <img src="${BASE_URL}menino.png" width="300">
+      <div class="finish-text">Fertig!</div>
+      <p style="font-size:2rem; font-weight:bold;">Punkte: ${punkte}</p>
+      <p>Gut gemacht!</p>`;
 
     fetch(scriptURL, {
-      method: "POST", mode: "no-cors", cache: "no-cache",
+      method: "POST", mode: "no-cors",
       body: JSON.stringify({ id: studentID, score: punkte, antwortA5: savedAntwortA5 })
     });
   }
