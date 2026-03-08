@@ -20,7 +20,7 @@
     .grid-cell { background: white; width: 95px; height: 95px; border: 0.5px solid #eee; }
     #robot { position: absolute; width: 85px; height: 85px; transition: all 0.5s ease; z-index: 10; font-size: 65px; display: flex; align-items: center; justify-content: center; left: 5px; top: 385px; }
     .cmd-stack { background: #f9f9f9; border: 2px dashed var(--blue); padding: 10px; min-height: 55px; margin: 10px 0; border-radius: 10px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; font-size: 32px; }
-    #paint-canvas { border: 3px solid var(--blue); background: white; touch-action: none; border-radius: 15px; display: block; margin: 0 auto; max-width: 100%; }
+    #paint-canvas { border: 3px solid var(--blue); background: white; touch-action: none; border-radius: 15px; display: block; margin: 0 auto; max-width: 100%; cursor: crosshair; }
     .palette { display: flex; justify-content: center; gap: 8px; margin: 10px; flex-wrap: wrap; }
     .swatch { width: 35px; height: 35px; border-radius: 50%; border: 2px solid #333; cursor: pointer; }
     .brush-btn { background: white; border: 2px solid var(--blue); padding: 5px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; }
@@ -62,7 +62,7 @@
   let studentID = "", punkte = 0, tempo = 40 * 60, currentTask = 1, versuche = 0, subIndex = 0;
   let botX = 0, botY = 4, botCmds = [];
   let pixelsPainted = 0, currentColor = "#000000", currentBrushSize = 8;
-  let savedAntwortA5 = "", drawingData = ""; // Variable für das Bild hinzugefügt
+  let savedAntwortA5 = "", drawingData = ""; 
 
   window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -120,10 +120,11 @@
       new Sortable(document.getElementById('sort-list'), { animation: 150 });
     } else if(currentTask === 3) {
       botCmds = []; botX = 0; botY = 4;
-      area.innerHTML = `<h3>Aufgabe 3: Bluebot</h3><div class="bluebot-grid"><div style="position:absolute;top:15px;right:15px;font-size:50px;z-index:1;">🏫</div><div id="robot">🤖</div>${Array(25).fill('<div class="grid-cell"></div>').join('')}</div>
+      const trees = [{x:1, y:2}, {x:3, y:1}]; 
+      area.innerHTML = `<h3>Aufgabe 3: Bluebot</h3><div class="bluebot-grid"><div style="position:absolute;top:15px;right:15px;font-size:50px;z-index:1;">🏫</div>${trees.map(t => `<div style="position:absolute; left:${t.x*95+25}px; top:${t.y*95+20}px; font-size:40px; z-index:1;">🌳</div>`).join('')}<div id="robot">🤖</div>${Array(25).fill('<div class="grid-cell"></div>').join('')}</div>
         <div class="cmd-stack" id="stack"> </div>
         <div><button class="btn-game" onclick="addBotCmd('F')">⬆️</button><button class="btn-game" onclick="addBotCmd('B')">⬇️</button><button class="btn-game" onclick="addBotCmd('L')">↩️</button><button class="btn-game" onclick="addBotCmd('R')">↪️</button></div>
-        <button id="btnA3" class="btn-game" style="background:var(--green)" onclick="runBotLogic()">GO!</button>`;
+        <button class="btn-game" style="background:var(--blue)" onclick="renderCurrentTask()">RESET 🔄</button><button id="btnA3" class="btn-game" style="background:var(--green)" onclick="runBotLogic()">GO!</button>`;
     } else if(currentTask === 4) {
       area.innerHTML = `<h3>Aufgabe 4: Binär</h3><input type="text" id="t-name" placeholder="Name..."><button class="btn-game" onclick="translateNow()">Verwandeln!</button>
         <div id="b-res" class="hidden" style="background:#eee;padding:15px;margin:10px;word-break:break-all;font-family:monospace;border:2px dashed var(--blue);"></div>
@@ -132,8 +133,7 @@
       area.innerHTML = `<h3>Aufgabe 5: Pixel Art</h3><div id="pixel-canvas"></div><br><input type="text" id="px-guess" placeholder="Was?"><button class="btn-game" onclick="checkA5()">WEITER</button>`;
       loadPixels();
     } else if(currentTask === 6) {
-      area.innerHTML = `<h3>Aufgabe 6: Malen</h3>
-        <div class="palette">${['#000','#7F7F7F','#880015','#F00','#FF7F27','#FF0','#0F0','#00A2E8','#00F','#A349A4','#FFAEC9','#FFF'].map(c=>`<div class="swatch" style="background:${c}" onclick="currentColor='${c}'"></div>`).join('')}</div>
+      area.innerHTML = `<h3>Aufgabe 6: Malen</h3><div class="palette">${['#000','#7F7F7F','#880015','#F00','#FF7F27','#FF0','#0F0','#00A2E8','#00F','#A349A4','#FFAEC9','#FFF'].map(c=>`<div class="swatch" style="background:${c}" onclick="currentColor='${c}'"></div>`).join('')}</div>
         <div class="palette"><button class="brush-btn" onclick="currentBrushSize=3">Fein</button><button class="brush-btn active" onclick="currentBrushSize=8">Mittel</button><button class="brush-btn" onclick="currentBrushSize=15">Groß</button><button class="brush-btn" onclick="currentColor='#FFFFFF'">🧽</button></div>
         <canvas id="paint-canvas" width="600" height="400"></canvas><br><button class="btn-game" onclick="saveDrawingAndNext()">FERTIG</button>`;
       initPaint();
@@ -142,7 +142,7 @@
         {q: "Jemand fragt dich im Internet: 'Wie alt bist du?'. Was machst du?", i: BASE_URL + "jahr.png", o: ["Ich sage mein Alter.", "Ich rufe meine Eltern und zeige es ihnen."], c: 1},
         {q: "Jemand fragt nach deiner Adresse. Was machst du?", i: BASE_URL + "adresse.png", o: ["Ich schicke sie sofort.", "Ich frage, warum ele isso saber quer.", "Ich rufe meine Eltern und zeige es ihnen."], c: 2},
         {q: "Du siehst Werbung in einer Spiele-App. Was machst du?", i: BASE_URL + "kaufen.png", o: ["Ich klicke drauf, um zu gucken.", "Ich bitte meine Eltern, die App zu löschen."], c: 1},
-        {q: "Jemand möchte, dass du Fotos oder Videos schickst. Was machst du?", i: BASE_URL + "fotos.png", o: ["Ich schicke die Fotos.", "Ich rufe meine Eltern und zeige es ihnen."], c: 1}
+        {q: "Jemand möchte, dass du Fotos or Videos schickst. Was machst du?", i: BASE_URL + "fotos.png", o: ["Ich schicke die Fotos.", "Ich rufe meine Eltern und zeige es ihnen."], c: 1}
       ];
       if(subIndex >= qA.length) { currentTask=8; subIndex=0; renderCurrentTask(); return; }
       area.innerHTML = `<h3>Aufgabe 7</h3><img src="${qA[subIndex].i}" height="180"><p>${qA[subIndex].q}</p><div id="q-opts"></div>`;
@@ -156,7 +156,7 @@
         <div class="click-item" onclick="this.style.background='#f8d7da'">Beim iPad-Spielen essen</div>
         <div class="click-item" onclick="this.style.background='#f8d7da'">Laden erst bei unter 2% Akku</div>
         <div class="click-item" onclick="this.style.background='#f8d7da'">Das iPad mit nur einer Hand tragen.“</div>
-        <div class="click-item" onclick="this.style.background='white'">Das iPad immer sicher auf den Tisch legen.</div>
+        <div class="click-item" onclick="this.style.background='white'">Das iPad sempre seguro na mesa legen.</div>
         <div class="click-item" onclick="this.style.background='#f8d7da'">Das iPad auf den Boden legen</div>
         <div class="click-item" onclick="this.style.background='#f8d7da'">Das iPad aus der Schutzhülle nehmen</div>
         <br><button class="btn-game" onclick="finishGame()">ENDE</button>`;
@@ -167,10 +167,7 @@
   function checkA2() {
     const items = document.querySelectorAll('.sort-item');
     let correct = 0;
-    items.forEach((it, idx) => {
-      if(parseInt(it.getAttribute('data-id')) === (idx+1)) { it.style.background="#d4edda"; correct++; }
-      else it.style.background="#f8d7da";
-    });
+    items.forEach((it, idx) => { if(parseInt(it.getAttribute('data-id')) === (idx+1)) { it.style.background="#d4edda"; correct++; } else it.style.background="#f8d7da"; });
     if(correct === items.length) { punkte+=20; setTimeout(() => { currentTask=3; versuche=0; renderCurrentTask(); }, 1500); }
     else { versuche++; if(versuche >= 2) setTimeout(() => { currentTask=3; versuche=0; renderCurrentTask(); }, 1500); else alert("Falsch!"); }
   }
@@ -179,43 +176,39 @@
   
   function runBotLogic() {
     let i = 0, r = document.getElementById('robot'); let cX=0, cY=4, cD=0;
+    const trees = [{x:1, y:2}, {x:3, y:1}];
     function step() {
       if(i < botCmds.length) {
         let cmd = botCmds[i];
         if(cmd === 'L') cD = (cD+3)%4; else if(cmd === 'R') cD = (cD+1)%4;
         else { let m = (cmd==='F'?-1:1); if(cD===0)cY+=m; else if(cD===1)cX-=m; else if(cD===2)cY-=m; else if(cD===3)cX+=m; }
-        r.style.transform = `rotate(${cD*90}deg)`; r.style.left = (Math.max(0,Math.min(4,cX))*95+5)+"px"; r.style.top = (Math.max(0,Math.min(4,cY))*95+5)+"px";
+        cX = Math.max(0, Math.min(4, cX)); cY = Math.max(0, Math.min(4, cY));
+        if(trees.find(t => t.x === cX && t.y === cY)) { alert("Achtung! Baum! 🌳"); renderCurrentTask(); return; }
+        r.style.transform = `rotate(${cD*90}deg)`; r.style.left = (cX*95+5)+"px"; r.style.top = (cY*95+5)+"px";
         i++; setTimeout(step, 600);
-      } else { if(cX===4 && cY===0) { punkte+=20; currentTask=4; renderCurrentTask(); } else alert("Falsch!"); }
+      } else { if(cX===4 && cY===0) { punkte+=20; currentTask=4; renderCurrentTask(); } else { alert("Falsch!"); renderCurrentTask(); } }
     }
     step();
   }
 
   function translateNow() {
-    let v = document.getElementById('t-name').value;
-    if(!v) return;
+    let v = document.getElementById('t-name').value; if(!v) return;
     let binary = v.split('').map(c => c.charCodeAt(0).toString(2).padStart(8,'0')).join(' ');
-    document.getElementById('b-res').innerText = binary;
-    document.getElementById('b-res').classList.remove('hidden');
-    document.getElementById('count-area').classList.remove('hidden');
+    document.getElementById('b-res').innerText = binary; document.getElementById('b-res').classList.remove('hidden'); document.getElementById('count-area').classList.remove('hidden');
   }
 
   function loadPixels() {
-    const c = document.getElementById('pixel-canvas');
-    c.innerHTML = "";
+    const c = document.getElementById('pixel-canvas'); c.innerHTML = "";
     for(let i=0; i<15*13; i++){
       let p = document.createElement('div'); p.className='pix'; p.dataset.p="f"; p.innerText=Math.floor(Math.random()*9)+1;
       const paint = (el) => {
         if(el && el.className==='pix' && el.dataset.p==="f"){
-          el.dataset.p="t"; pixelsPainted++;
-          el.style.backgroundImage=`url('${BASE_URL}fruhling.png')`; el.style.backgroundSize="675px 585px";
-          let idx = Array.from(c.children).indexOf(el);
-          el.style.backgroundPosition = `-${(idx%15)*45}px -${Math.floor(idx/15)*45}px`;
+          el.dataset.p="t"; pixelsPainted++; el.style.backgroundImage=`url('${BASE_URL}fruhling.png')`; el.style.backgroundSize="675px 585px";
+          let idx = Array.from(c.children).indexOf(el); el.style.backgroundPosition = `-${(idx%15)*45}px -${Math.floor(idx/15)*45}px`;
           el.innerText=""; el.style.border="none";
         }
       };
-      p.onmouseover = () => paint(p);
-      p.ontouchmove = (e) => { e.preventDefault(); paint(document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY)); };
+      p.onmouseover = () => paint(p); p.ontouchmove = (e) => { e.preventDefault(); paint(document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY)); };
       c.appendChild(p);
     }
   }
@@ -224,7 +217,7 @@
 
   function initPaint() {
     const cvs = document.getElementById('paint-canvas'); const ctx = cvs.getContext('2d');
-    ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0,0,cvs.width,cvs.height); // Hintergrund weiß füllen
+    ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0,0,cvs.width,cvs.height);
     let d = false;
     const getXY = (e) => {
       const r = cvs.getBoundingClientRect();
@@ -234,38 +227,18 @@
     };
     cvs.onmousedown = cvs.ontouchstart = (e) => { d = true; ctx.beginPath(); const [x,y] = getXY(e); ctx.moveTo(x,y); };
     cvs.onmouseup = cvs.ontouchend = () => { d = false; };
-    cvs.onmousemove = cvs.ontouchmove = (e) => {
-      if(!d) return; e.preventDefault();
-      ctx.lineWidth = currentBrushSize; ctx.lineCap='round'; ctx.strokeStyle = currentColor;
-      const [x,y] = getXY(e); ctx.lineTo(x,y); ctx.stroke();
-    };
+    cvs.onmousemove = cvs.ontouchmove = (e) => { if(!d) return; e.preventDefault(); ctx.lineWidth = currentBrushSize; ctx.lineCap='round'; ctx.strokeStyle = currentColor; const [x,y] = getXY(e); ctx.lineTo(x,y); ctx.stroke(); };
   }
 
   function saveDrawingAndNext() {
-    const cvs = document.getElementById('paint-canvas');
-    drawingData = cvs.toDataURL("image/png"); // Bild als Text speichern
-    punkte += 10;
-    currentTask = 7;
-    subIndex = 0;
-    renderCurrentTask();
+    const cvs = document.getElementById('paint-canvas'); drawingData = cvs.toDataURL("image/png"); punkte += 10; currentTask = 7; subIndex = 0; renderCurrentTask();
   }
 
   function finishGame() {
-    document.getElementById('avatar-img').classList.add('hidden');
-    document.getElementById('header').classList.add('hidden');
+    document.getElementById('avatar-img').classList.add('hidden'); document.getElementById('header').classList.add('hidden');
     document.getElementById('game-area').innerHTML = `<img src="${BASE_URL}menino.png" width="300"><div style="font-size:70px; font-weight:bold; color:var(--purple); margin:20px 0;">Fertig!</div><p>Punkte: ${punkte}</p>`;
-    
-    fetch(scriptURL, { 
-      method: "POST", 
-      mode: "no-cors", 
-      body: JSON.stringify({ 
-        id: studentID, 
-        score: punkte, 
-        antwortA5: savedAntwortA5,
-        bildData: drawingData 
-      }) 
-    });
-  } // <-- Fechamento da função finishGame
+    fetch(scriptURL, { method: "POST", mode: "no-cors", body: JSON.stringify({ id: studentID, score: punkte, antwortA5: savedAntwortA5, bildData: drawingData }) });
+  }
 </script>
 </body>
 </html>
